@@ -1,6 +1,5 @@
 /**
  * Fonctions pour présenter les données suivant la spécification HAL
- * Voir la spécification HAL : https://stateless.group/hal_specification.html
  * Voir la spécification HAL (RFC, source) : https://datatracker.ietf.org/doc/html/draft-kelly-json-hal
  */
 
