@@ -30,17 +30,17 @@ function all(req, res, next) {
     const offset = Number.parseInt(req.query.offset, 10);
     if (!isNaN(offset) && offset > -1) {
       //Met a jour les paramètres par défaut.
-      query.offset = req.query.offset;
+      query.offset = Number.parseInt(req.query.offset);
     }
   }
 
   //Validation des paramètres d'URL
   if ("limit" in req.query && paginateEnum.includes("limit")) {
     //limit : doit être un entier positif
-    const offset = Number.parseInt(req.query.offset, 10);
-    if (!isNaN(limit) && limit > 0 && limit < pagination.LIMIT_MAX) {
+    const limit = Number.parseInt(req.query.limit, 10);
+    if (!isNaN(limit) && limit > 0 && limit <= pagination.LIMIT_MAX) {
       //Met a jour les paramètres par défaut.
-      query.limit = req.query.limit;
+      query.limit = Number.parseInt(req.query.limit);
     }
   }
 
@@ -59,11 +59,29 @@ function all(req, res, next) {
   });
 
   //Paginer les résultats
-  //Remarque : A déplacer en base de données
+  //Remarques : A déplacer en base de données
+  const page = upcoming_concerts.slice(
+    query.offset,
+    query.offset + query.limit,
+  );
+
+  const hasNext = query.offset + query.limit < upcoming_concerts.length;
+  const hasPrev = query.offset - query.limit > 0;
+
+  const current_url = `${req.baseUrl}?offset=${query.offset}&limit=${query.limit}`;
+  const next_url = hasNext
+    ? `${req.baseUrl}?offset=${query.offset + query.limit}&limit=${query.limit}`
+    : null;
+  const prev_url = hasPrev
+    ? `${req.baseUrl}?offset=${Math.max(query.offset - query.limit, 0)}&limit=${query.limit}`
+    : null;
 
   const response = hal.listeConcertsToResourceObject(
-    upcoming_concerts,
+    page,
     req.baseUrl,
+    current_url,
+    next_url,
+    prev_url,
   );
 
   //Fabrication de la réponse HTTP

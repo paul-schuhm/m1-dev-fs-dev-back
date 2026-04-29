@@ -33,14 +33,15 @@ function halLinkObject(
  * @param {} concerts
  * @param {*} baseUrl
  */
-function listeConcertsToResourceObject(concerts, baseUrl) {
+function listeConcertsToResourceObject(concerts, baseUrl, current_page, next_page, prev_page) {
+
   return {
     _links: [
       {
         self: halLinkObject(baseUrl + `/concerts{?offset=0&limit=${paginate.LIMIT_DEFAULT}}`, "string", '', true),
-        current_page : '??',
-        next_page: '??',
-        prev_page: '??'
+        current_page : current_page,
+        next_page: next_page,
+        prev_page: prev_page
       },
     ],
     _embedded: concerts.map((c) => concertItemListToResourceObject(c, baseUrl)),
