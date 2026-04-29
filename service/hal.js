@@ -37,7 +37,7 @@ function listeConcertsToResourceObject(concerts, baseUrl) {
   return {
     _links: [
       {
-        self: halLinkObject(baseUrl + `/concerts{?offset=0&limit=${paginate.LIMIT_DEFAULT}`, "string", true),
+        self: halLinkObject(baseUrl + `/concerts{?offset=0&limit=${paginate.LIMIT_DEFAULT}}`, "string", '', true),
         current_page : '??',
         next_page: '??',
         prev_page: '??'

@@ -81,14 +81,14 @@ Schéma type
   "_links": [
     {
       "self": {
-        "href": "/v1/concerts{?offset=0&limit=10",
-        "templated": false,
+        "href": "/v1/concerts{?offset=0&limit=10}",
+        "templated": true,
         "type": "string",
         "name": true
       },
-      "current_page": "??",
-      "next_page": "??",
-      "prev_page": "??"
+      "current_page": "/v1/concerts?offset=0&limit=10",
+      "next_page": "/v1/concerts?offset=10&limit=10",
+      "prev_page": null
     }
   ],
   "_embedded": [
