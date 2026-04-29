@@ -29,32 +29,54 @@ function halLinkObject(
 }
 
 /**
- * Retourne une représentation Ressource Object (HAL) d'un concert
+ * Retourne une représentation Resource Object (HAL) de la liste des concerts à venir
+ * @param {} concerts
+ * @param {*} baseUrl
+ */
+function listeConcertsToResourceObject(concerts, baseUrl) {
+  return {
+    _links: [
+      {
+        self: halLinkObject(baseUrl + "/concerts", "string"),
+      },
+    ],
+    _embedded: concerts.map((c) => concertItemListToResourceObject(c, baseUrl)),
+    //Données propres à la liste
+    nb_concerts: concerts.length,
+    created_at: new Date(),
+  };
+}
+
+/**
+ * Retourne une représentation Ressource Object (HAL) d'un concert présenté dans une liste
  * @param {*} concertData Données brutes d'un concert
  * @returns un Ressource Object Concert (spec HAL)
  */
-function concertToResourceObject(concertData, baseURL) {
+function concertItemListToResourceObject(concertData, baseUrl) {
   return {
     _links: [
       {
         self: halLinkObject(
-          baseURL + "/concerts" + "/" + concertData.id,
+          baseUrl + "/concerts" + "/" + concertData.id,
           "string",
         ),
         reservation: halLinkObject(
-          baseURL +
-            "/concerts" +
-            "/" +
-            concertData.id +
-            "/reservations",
+          baseUrl + "/concerts" + "/" + concertData.id + "/reservations",
           "string",
         ),
       },
     ],
 
-    artist: concertData.artist,
+    remainingAttendeeCapacity:
+      concertData.nb_seats - (concertData.nb_reservations ?? 0),
     date: concertData.date,
-    nb_seats_available: concertData.nb_seats - (concertData.nb_reservations ?? 0),
+    local_date: new Date(concertData.date).toLocaleDateString("fr-FR", {
+      timeZone: "Europe/Paris",
+    }),
+    local_hour: new Date(concertData.date).toLocaleTimeString("fr-FR", {
+      timeZone: "Europe/Paris",
+    }),
+    performer: concertData.artist,
     location: concertData.location,
   };
 }
@@ -104,7 +126,8 @@ function userToResourceObject(utilisateurData, baseURL) {
 
 module.exports = {
   halLinkObject,
-  concertToResourceObject,
+  concertItemListToResourceObject,
   userToResourceObject,
   reservationToResourceObject,
+  listeConcertsToResourceObject
 };
