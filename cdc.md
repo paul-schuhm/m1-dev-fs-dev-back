@@ -4,7 +4,11 @@
   - [Dictionnaire des données](#dictionnaire-des-données)
   - [Ressources](#ressources)
   - [Représentations acceptées par le client](#représentations-acceptées-par-le-client)
-      - [La liste des concerts à venir `/concerts`](#la-liste-des-concerts-à-venir-concerts)
+    - [La liste des concerts à venir `/concerts`](#la-liste-des-concerts-à-venir-concerts)
+  - [Représentations acceptées par le serveur (formulaires)](#représentations-acceptées-par-le-serveur-formulaires)
+  - [Parcours nominal (progression typique des évènements)](#parcours-nominal-progression-typique-des-évènements)
+  - [Cas d'erreurs](#cas-derreurs)
+  - [Exemples de use-case (parcours clients)](#exemples-de-use-case-parcours-clients)
 
 
 ## Dictionnaire des données
@@ -72,7 +76,7 @@ Lse service renverra des données au format `application/hal+json`, en suivant l
 
 On définit ici les représentations des ressources envoyées par le serveur au client.
 
-#### La liste des concerts à venir `/concerts`
+### La liste des concerts à venir `/concerts`
 
 Schéma type
 
@@ -121,3 +125,25 @@ Schéma type
   "created_at": "2026-04-29T11:54:07.670Z"
 }
 ~~~
+
+## Représentations acceptées par le serveur (formulaires)
+
+Le client enverra sa représentation au format `application/x-www-form-urlencoded` (formulaire), soit de simples `clef=valeur` dans le corps de la requête HTTP.
+
+
+## Parcours nominal (progression typique des évènements)
+
+Scénario nominal (où tout se passe bien)
+
+1. Un utilisateur accède à la liste des concerts
+2. L'utilisateur repère un concert qui l'intéresse, accède aux détails sur le concert
+3. L'utilisateur décide de réserver une place pour le concert
+4. L'utilisateur confirme sa réservation
+
+## Cas d'erreurs
+
+> À venir.
+
+## Exemples de use-case (parcours clients)
+
+> À venir
