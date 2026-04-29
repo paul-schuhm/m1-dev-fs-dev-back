@@ -6,6 +6,7 @@ const pagination = require("../../service/paginate");
 
 
  // #swagger.tags = ['Concerts']
+ // #swagger.summary = 'La liste des concerts à venir'
 
 /**
  * GET /concerts

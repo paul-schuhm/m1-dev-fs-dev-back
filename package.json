@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "NODE_ENV=developement node --watch index.js",
-    "build-oad" : "node swagger.js"
+    "gen-oad" : "node gen-oad.js"
   },
   "keywords": [],
   "author": "",

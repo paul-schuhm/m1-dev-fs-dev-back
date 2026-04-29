@@ -20,7 +20,7 @@ npm run dev
 ## (Re)Générer la documentation OpenAPI
 
 ~~~
-npm run build-oad
+npm run gen-oad
 ~~~
 
 ## Accéder à la documentation OpenAPI
