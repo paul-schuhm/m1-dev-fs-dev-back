@@ -42,9 +42,11 @@ function all(req, res, next) {
             //Met a jour les paramètres par défaut.
             query.offset = Number.parseInt(req.query.offset);
         } else {
+            
             //Erreur: Bad request
-            res.status(400);
-            const error = hal.errorToResourceObject({
+
+            //A terminer : Délègue au middleware gestionnaire d'erreur...
+            res.locals.errorResponse = hal.errorToResourceObject({
                 code: 400,
                 url: req.originalUrl,
                 path: req.path,
@@ -52,7 +54,7 @@ function all(req, res, next) {
                 description: 'offset must be an integer, positive or nul',
                 timestamp: new Date().getTime(),
             }, req.baseUrl);
-            res.json(error);
+            next();
         }
     }
 

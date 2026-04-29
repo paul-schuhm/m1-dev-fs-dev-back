@@ -31,7 +31,8 @@ app.use(function (err, req, res, next) {
     }
     // render the error page
     res.status(err.status || 500);
-    res.send("Error");
+    // A compléter.
+    res.json(res.locals.errorResponse);
 });
 
 app.listen(port, () => {
