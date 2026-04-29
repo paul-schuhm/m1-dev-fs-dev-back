@@ -2,18 +2,19 @@ const swaggerAutogen = require("swagger-autogen")();
 
 //Fichier de sortie (doc générée)
 const outputFile = "./oad.json";
-//Les routes à documenter (via des commentaires dédiés)
+//Les routes à documenter (via des annotations swagger)
 const endpointsFiles = [
-  "./controller/v1/concertController.js",
+    "./index.js"
 ];
 //Métadonnées générales
 const doc = {
-  info: {
-    title: "Service de billetterie de concerts",
-    description: "Projet fil rouge",
-  },
-  host: "",
-  schemes: ["http"],
+
+    info: {
+        title: 'Service de billeterrie de concerts',
+        version: '0.1',
+        description: 'Documentation du service de billeterrie',
+    },
+    schemes: ["http"],
 };
 
 //Génération de la doc

@@ -1,14 +1,41 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "Service de billetterie de concerts",
-    "description": "Projet fil rouge",
-    "version": "1.0.0"
+    "title": "Service de billeterrie de concerts",
+    "version": "0.1",
+    "description": "Documentation du service de billeterrie"
   },
-  "host": "",
+  "host": "localhost:3000",
   "basePath": "/",
   "schemes": [
     "http"
   ],
-  "paths": {}
+  "paths": {
+    "/v1/concerts": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "offset",
+            "description": "Offset pour pagination",
+            "required": false,
+            "type": "string",
+            "in": "query"
+          },
+          {
+            "name": "limit",
+            "description": "Nombre d'éléments par page",
+            "required": false,
+            "type": "string",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  }
 }

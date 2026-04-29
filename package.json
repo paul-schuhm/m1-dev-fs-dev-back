@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "NODE_ENV=developement node --watch index.js",
-    "gen-oad" : "node gen-oad.js"
+    "gen-oad": "node gen-oad.js"
   },
   "keywords": [],
   "author": "",
@@ -13,7 +13,9 @@
   "type": "commonjs",
   "dependencies": {
     "express": "^5.2.1",
-    "swagger-autogen": "^2.23.7",
     "swagger-ui-express": "^5.0.1"
+  },
+  "devDependencies": {
+    "swagger-autogen": "^2.23.7"
   }
 }
