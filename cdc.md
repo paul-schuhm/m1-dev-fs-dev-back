@@ -109,7 +109,7 @@ Schéma type
         }
       ],
       "remainingAttendeeCapacity": 500,
-      "date": "2028-07-17T19:00:00Z",
+      "date_start": "2028-07-17T19:00:00Z",
       "local_date": "17/07/2028",
       "local_hour": "21:00:00",
       "performer": "The Midnight Echo",

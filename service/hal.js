@@ -73,7 +73,7 @@ function concertItemListToResourceObject(concertData, baseUrl) {
 
     remainingAttendeeCapacity:
       concertData.nb_seats - (concertData.nb_reservations ?? 0),
-    date: concertData.date,
+    date_start: concertData.date,
     local_date: new Date(concertData.date).toLocaleDateString("fr-FR", {
       timeZone: "Europe/Paris",
     }),
