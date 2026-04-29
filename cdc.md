@@ -60,11 +60,11 @@ Les spécifications initiales sont encore trop ouvertes. Voici quelques question
 
 | Ressource  | URL  | Méthodes HTTP  | Paramètres d'URL (variations)  | Commentaires  |
 |---|---|---|---|---|
-| *Les liste des concerts à venir*  | `/concerts`  | GET  |  `offset`, limit` | Seuls les concerts *à venir* sont affichés, complets ou non  |
+| *Les liste des concerts à venir*  | `/concerts`  | GET  |  `offset`, `limit` | Résultats paginés. Seuls les concerts *à venir* sont affichés, complets ou non  |
 | *Les informations sur un concert* | `/concerts/{id-concert}`  |  GET | X  |   |
 | *La réservation d'une place de concert*  | `/reservations/{id-reservation}`  | GET, DELETE, PUT  | X  | Ne doit être accessible qu’au propriétaire de la réservation |
 | *La liste des réservations pour un concert*  | `/concerts/{id-concert}/reservations`   | POST, GET  | X  | GET est réservé au gestionnaire du site (role `admin`)  |
-| *Mes réservations*  | `/me`  | GET  | X  | Permet d'accéder à la liste de mes réservations  |
+| *Mes réservations*  | `/me/reservations`  | GET  | X  | Permet au client d'accéder à sa liste de réservations  |
 
 ## Représentations acceptées par le client
 
