@@ -5,17 +5,21 @@ const pagination = require("../../service/paginate");
 function all(req, res, next) {
 
     /* #swagger.parameters['offset'] = {
-        in: query,
+        in: 'query',
         description: 'Offset pour pagination',                   
         required: false,                     
         type: 'string',                          
     } */
 
     /* #swagger.parameters['limit'] = {
-        in: query,
+        in: 'query',
         description: 'Nombre d\'éléments par page',                   
         required: false,                     
         type: 'string',                          
+    } */
+
+    /* #swagger.responses[400] = {
+    description: 'Bad value for query parameters',
     } */
 
     //Important : Toujours valider les paramètres d'URL (clé et valeur) !
@@ -37,6 +41,18 @@ function all(req, res, next) {
         if (!isNaN(offset) && offset > -1) {
             //Met a jour les paramètres par défaut.
             query.offset = Number.parseInt(req.query.offset);
+        } else {
+            //Erreur: Bad request
+            res.status(400);
+            const error = hal.errorToResourceObject({
+                code: 400,
+                url: req.originalUrl,
+                path: req.path,
+                source: 'Bad value for query parameter \'offset\'',
+                description: 'offset must be an integer, positive or nul',
+                timestamp: new Date().getTime(),
+            }, req.baseUrl);
+            res.json(error);
         }
     }
 

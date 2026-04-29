@@ -74,3 +74,4 @@ Nous reprenons la démarche générale, proposée par [Leonard Richardson](https
 ### Schémas utilisés
 
 - [MusicEvent](https://schema.org/MusicEvent), sur [schema.org](https://schema.org)
+- [ErrorType](https://schema.org/Error)

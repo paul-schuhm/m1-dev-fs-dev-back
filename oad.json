@@ -17,22 +17,25 @@
         "parameters": [
           {
             "name": "offset",
+            "in": "query",
             "description": "Offset pour pagination",
             "required": false,
-            "type": "string",
-            "in": "query"
+            "type": "string"
           },
           {
             "name": "limit",
+            "in": "query",
             "description": "Nombre d'éléments par page",
             "required": false,
-            "type": "string",
-            "in": "query"
+            "type": "string"
           }
         ],
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "400": {
+            "description": "Bad value for query parameters"
           }
         }
       }
