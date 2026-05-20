@@ -7,6 +7,7 @@
   - [Tester avec cURL et jq](#tester-avec-curl-et-jq)
   - [Cahier des charges (spécifications)](#cahier-des-charges-spécifications)
     - [Méthodologie employée pour concevoir et implémenter l'API REST](#méthodologie-employée-pour-concevoir-et-implémenter-lapi-rest)
+  - [Guide](#guide)
   - [Ressources utiles](#ressources-utiles)
     - [Schémas utilisés](#schémas-utilisés)
 
@@ -64,6 +65,10 @@ Nous reprenons la démarche générale, proposée par [Leonard Richardson](https
 7. **Intégrer** la ressource parmi celles qui existent déjà, en utilisant un format *hypermédia*
 8. **Envisager** la progression typique des évènements: qu'est-ce qui est censé se produire ? [Le flux de contrôle standard comme le protocole de publication Atom](https://www.ibm.com/docs/fr/integration-designer/8.5.5?topic=formats-atom-feed-format) peut aider.
 9. **Considérer** les cas d'erreurs: qu'est-ce qui peut mal se passer ? Que faire dans ce cas ?
+
+## Guide
+
+[Accéder au guide de développement, intégration et déploiement du service.](./tp-billeterie-sujet.md)
 
 ## Ressources utiles
 
