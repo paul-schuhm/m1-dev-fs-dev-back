@@ -1,12 +1,6 @@
-# Développement Back-end et conception d'API (49h)
+# Développement Back-end et conception d'API (49h) - Guide
 
-M1 Dev FS
-
-Auteur: <a href="mailto:contact@pschuhmacher.com">Paul Schuhmacher</a>
-
-Date de publication: 03/26
-
-- [Développement Back-end et conception d'API (49h)](#développement-back-end-et-conception-dapi-49h)
+- [Développement Back-end et conception d'API (49h) - Guide](#développement-back-end-et-conception-dapi-49h---guide)
   - [Objectif principal](#objectif-principal)
   - [Partie 2 : Choix technologique, mise en place d'un projet conteneurisé, tests, tooling de qualité du code](#partie-2--choix-technologique-mise-en-place-dun-projet-conteneurisé-tests-tooling-de-qualité-du-code)
   - [Conteneurisation](#conteneurisation)
@@ -31,16 +25,16 @@ Date de publication: 03/26
   - [Déploiement *Blue-Green*](#déploiement-blue-green)
   - [Scénario (sans *breaking change* au niveau du schéma)](#scénario-sans-breaking-change-au-niveau-du-schéma)
   - [Mise en place](#mise-en-place)
+  - [Scripter la bascule](#scripter-la-bascule)
   - [Test du *zero-downtime*](#test-du-zero-downtime)
   - [Protocole de test à exécuter](#protocole-de-test-à-exécuter)
   - [Checkpoint](#checkpoint-3)
   - [Questions (réfléchir)](#questions-réfléchir)
-  - [En cours de consolidation...](#en-cours-de-consolidation)
+  - [En cours de consolidation](#en-cours-de-consolidation)
   - [Migration (*vanilla*, sans ORM)](#migration-vanilla-sans-orm)
   - [Checkpoint](#checkpoint-4)
   - [Intégration d'un ORM pour les migrations](#intégration-dun-orm-pour-les-migrations)
   - [Mise en cache avec Redis](#mise-en-cache-avec-redis)
-
 
 ## Objectif principal
 
@@ -74,8 +68,7 @@ Date de publication: 03/26
 > À valider ensemble
 
 - Présenter votre Dockerfile et la taille de l'image finale à destination de la production générée
-- Présenter l'environnement de developement;
-
+- Présenter l'environnement `developement`;
 
 ## Gestion des environnements
 
@@ -286,12 +279,10 @@ GREEN APP ─┘
 
 ## Scénario (sans *breaking change* au niveau du schéma)
 
-**Scénario** :
+**Scénario** (simple) :
 
 - Version *Blue* (v1.0.0) : L'API possède une route `GET /health` qui renvoie `{ "status": "OK" }`. Dans la console, elle logue `[INFO] Request received`.
 - Version *Green* (v1.0.1) : Le code de l'API change uniquement le log interne : `[DEBUG] Client called health check on port XXX`. Le contrat d'interface (`{ "status": "OK" }`) reste strictement identique pour le client.
-
-> Imaginez-en un autre au besoin
 
 ## Mise en place
 
@@ -378,16 +369,135 @@ VERSION="$NEXT_RELEASE_VERSION" PORT="$GREEN_PORT" docker compose -f /app/green/
 ~~~
  -->
 
-4. Bascule : rediriger le trafic dans la configuration du load balancer (nginx)
+4. **Bascule** : rediriger le trafic dans la configuration du load balancer (nginx)
 
 ~~~bash
-# nginx.conf (Version Modifiée)
+# nginx.conf
 upstream api_servers {
     server api-green:3002; # Le trafic est basculé instantanément
 }
 ~~~
 
 Puis faire la bascule sans *downtine* avec `nginx -s reload` (rechargement de la config *sans* redémarrer le process nginx).
+
+## Scripter la bascule
+
+Pour éviter d'éditer manuellement le fichier `nginx.conf` à chaque déploiement, l'astuce consiste à utiliser un **lien symbolique** pour la configuration de Nginx.
+
+> La méthode des liens symboliques est très utilisée dans les environnements UNIX, notamment pour la mise en production déterministe, comme par l'excellent outil de déploiement [Capistrano](https://capistranorb.com/)
+
+On crée :
+
+- deux fichiers de configuration fixes `api_blue.conf` et `api_green.conf`
+- un lien symbolique `api.conf` qui pointe *à chaque instant* vers l'un des deux fichiers
+- un script `switch` n'a plus qu'à faire pointer le lien symbolique vers l'environnement choisi avant de recharger Nginx
+
+~~~bash
+/etc/nginx/
+├── conf.d/
+│   └── api.conf -> /etc/nginx/upstream_blue.conf  # Le lien symbolique actif
+├── upstream_blue.conf                             # Fichier fixe pour Blue
+└── upstream_green.conf                            # Fichier fixe pour Green
+~~~
+
+Fichier `upstream_blue.conf` :
+
+~~~bash
+upstream api_servers {
+    server 127.0.0.1:3001; # Pointe vers le port de Blue
+}
+~~~
+
+Fichier `upstream_green.conf` :
+
+~~~bash
+upstream api_servers {
+    server 127.0.0.1:3001; # Pointe vers le port de Blue
+}
+~~~
+
+Fichier de **configuration principal** `default.conf` :
+
+~~~bash
+# On inclut le fichier pointé par le lien symbolique
+include /etc/nginx/conf.d/api.conf;
+
+server {
+    listen 80;
+    server_name api.mondomaine.com;
+
+    location / {
+        proxy_pass http://api_servers; # Utilise l'upstream dynamique
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+~~~
+
+Le script de bascule `switch` :
+
+~~~bash
+#!/bin/bash
+
+# Bascule les requêtes entrantes Nginx vers le cluster de conteneurs de l'API (blue ou green)
+
+# Configuration des chemins
+NGINX_DIR="/etc/nginx"
+# PATH du fichier du lien symbolique (pointe sur config blue ou green)
+LINK_PATH="$NGINX_DIR/conf.d/api.conf"
+
+# Récupération et vérification de l'argument
+TARGET_ENV=$(echo "$1" | tr '[:upper:]' '[:lower:]')
+
+if [ "$TARGET_ENV" != "blue" ] && [ "$TARGET_ENV" != "green" ]; then
+  echo "Usage : "
+  echo "switch blue"
+  echo "switch green"
+  exit 1
+fi
+
+echo "Préparation de la bascule vers l'environnement : [${TARGET_ENV^^}]"
+
+# MISE A JOUR DU LIEN SYMBOLIQUE
+TARGET_CONF="$NGINX_DIR/upstream_${TARGET_ENV}.conf"
+ln -sfn "$TARGET_CONF" "$LINK_PATH"
+
+# Test de la configuration Nginx pour éviter de casser le serveur en prod
+if nginx -t > /dev/null 2>&1; then
+  echo "Configuration Nginx valide."
+  # 3. Rechargement de Nginx à chaud (Zero-Downtime)
+  nginx -s reload
+  echo "Bascule réussie. Tout le trafic pointe maintenant sur [${TARGET_ENV^^}]."
+else
+  echo "Erreur critique : La configuration de Nginx est invalide après le changement."
+  echo "Reversion automatique vers l'état précédent..."
+  # Optionnel : réaliser une marche arrière automatique ici si nécessaire
+  exit 1
+fi
+~~~
+
+Rendre le script exécutable et l'installer sur le `PATH` :
+
+~~~bash
+chmod +x switch
+cp switch /usr/bin/switch
+~~~
+
+Utilisation :
+
+- L'application est actuellement sur *Blue* (port 3001).
+- Déployez la nouvelle version dans le dossier `/app/green` (port 3002) et vous attendez qu'elle soit prête.
+- Lancez la bascule instantanée :
+
+~~~bash
+switch green
+~~~
+
+En cas de problème majeur, faire un *rollback* sur *Blue* :
+
+~~~bash
+switch blue
+~~~
 
 ## Test du *zero-downtime*
 
@@ -411,10 +521,10 @@ npx autocannon -c 10 -d 60 http://localhost:3000/health
 
 Suivre ces étapes pendant que votre test de charge tourne :
 
-1. **Lancez le test de charge** (avec cURL ou autocannon). Vous devez voir les statuts `200` défiler ou les requêtes s'accumuler.
-2. **Modifiez le code de l'API** (Version Green) : changez uniquement un message de log interne dans votre console (ex: passer de `[INFO]` à `[DEBUG]`). *Rappel : Le format JSON de réponse de l'API doit rester strictement identique pour ne pas créer de breaking change côté client.*
-3. **Build et Up de Green :** Générez la nouvelle image Docker et démarrez le conteneur *Green* sur son port dédié (ex: `3002`), sans toucher à Blue.
-4. **La Bascule Nginx :** Modifiez le fichier de configuration de Nginx pour remplacer l'adresse de l'<em>upstream</em> vers le conteneur Green.
+1. **Lancez le test de charge** (avec cURL, [k6(Grafana)](https://k6.io/), [autocanon](https://www.npmjs.com/package/autocannon), etc.). Vous devez voir les statuts `200` défiler ou les requêtes s'accumuler.
+2. **Modifiez le code de l'API** (version *Green*) : changez uniquement un message de log interne dans votre console (ex: passer de `[INFO]` à `[DEBUG]`). *Rappel : Le format JSON de réponse de l'API doit rester strictement identique pour ne pas créer de breaking change côté client.*
+3. **Build et up de Green :** générez la nouvelle image Docker et démarrez le conteneur *Green* sur son port dédié (ex: `3002`), sans toucher à *Blue*.
+4. **La Bascule Nginx :** Modifiez le fichier de configuration de Nginx (ou exécuter le script `switch green` prévu à cet effet) pour remplacer l'adresse de l'<em>upstream</em> vers le cluster de conteneurs *Green*.
 5. **Le rechargement à chaud :** **Exécutez** la commande suivante pour recharger la configuration de Nginx sans arrêter le serveur :
 
     ```bash
@@ -427,9 +537,9 @@ Suivre ces étapes pendant que votre test de charge tourne :
 
 ## Checkpoint
 
-Montrer les éléments suivants :
+Après un test de charge, montrer les éléments suivants :
 
-- Côté client (autocannon ou curl) : le compteur d'erreurs (HTTP 502, 503 ou connexions perdues) doit être **strictement égal à 0**.
+- Côté client : le compteur d'erreurs (HTTP 502, 503 ou connexions perdues) doit être **strictement égal à 0**.
 - Côté serveur (logs du conteneur de l'API) : vous devez voir les lignes de logs basculer *instantanément* de l'ancien format au nouveau format au milieu du flux de requêtes.
 
 ## Questions (réfléchir)
@@ -438,7 +548,7 @@ Montrer les éléments suivants :
 2. Dans un scénario réel où la Version *Green* apporte une modification du schéma de base de données, pourquoi le fait de simplement basculer Nginx comme on vient de le faire casserait-il l'application des utilisateurs, même si Nginx ne renvoie aucune erreur 502 ?
 3. Comment l'utilisation combinée [du pattern **Expand/Contract** ou parallel change](https://martinfowler.com/bliki/ParallelChange.html) au niveau de la base de données permet-elle de résoudre le problème de la Question 2 lors d'une bascule Blue/Green ?
 
-## En cours de consolidation...
+## En cours de consolidation
 
 ## Migration (*vanilla*, sans ORM)
 
@@ -449,7 +559,6 @@ Montrer les éléments suivants :
 ## Checkpoint
 
 - Expliquer votre stratégie de migration
-
 
 <!-- 
 Limite: pas de down (revert)
@@ -477,10 +586,10 @@ Attention, la version de l'API (client) n'est pas nécessairement identique à l
 Vous devez appliquer la [stratégie Expand/Contract (ou Parallel Change)](https://martinfowler.com/bliki/ParallelChange.html) afin de Déployer de manière rétrocompatible, en accord avec le pattern Blue/Green :
 
 - Étape 1 (**Expand**) : Modifiez votre script de migration pour **ajouter** la colonne `fullName` sans supprimer les anciennes colonnes. Modifiez le code de votre API pour qu'elle écrive dans les deux formats mais lise l'un ou l'autre.
-- Étape 2 (Transition) : **Migrez** les anciennes données (concaténation de l'existant).
+- Étape 2 (**Transition**) : **Migrez** les anciennes données (concaténation de l'existant).
 - Étape 3 (**Contract**) : Une fois la v2 totalement déployée et la v1 éteinte, appliquez une dernière migration pour **supprimer** firstname et lastname. -->
 
-<!-- > Les breaking changes de votre schéma reflettent-ils nécessairement les breaking changes de votre API ? Pourquoi est-il strictement interdit de faire un DROP COLUMN firstname directement lors du déploiement de la version contenant le code de la v2 ? -->
+<!-- Les breaking changes de votre schéma reflettent-ils nécessairement les breaking changes de votre API ? Pourquoi est-il strictement interdit de faire un DROP COLUMN firstname directement lors du déploiement de la version contenant le code de la v2 ? -->
 
 <!-- 
 Pré requis : 
@@ -499,14 +608,14 @@ Pré requis :
   - Pre cI : git hook :
     - linter, formatter avec code standard, tests unitaires
   - CI avec Github Actions :
-    - Linter, formatter avec code standard, tests unitaires
+    - Linter, formatter avec code standard, tests unitaires/internes (stateless)
     - Build image
-    - Tetss exterxnes (tests image depuis un service docker comme client test prévu à cet effet), test image comme boite noire
+    - Tests externe (tests image depuis un service docker comme client test prévu à cet effet), test image comme boite noire, stateful
     - Publication sur votre registre Dockerhub avec version (tag commit ou date)
 - CD : 
   - Propriétés d'une bonne mise en prod
   - Manuelle 
-    - Procédure de Déploiement blue green
-    - Scénario avec branking changes (expand/contract). Ex: champ lastname et firstname remplacés par fullName : retrcompatible
+    - Procédure de Déploiement *blue green*
+    - Scénario avec breaking changes (expand/contract)
 - Sécuriser : rate-limiting avec fail2ban avec reverse proxy.
 - -->
