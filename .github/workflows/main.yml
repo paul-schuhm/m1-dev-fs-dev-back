@@ -1,0 +1,128 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # -----------------------------
+      # Docker auth + buildx
+      # -----------------------------
+      - name: Login to Docker Hub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ vars.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v4
+
+      # -----------------------------
+      # Build image for tests (test internes, unitaires, stateless)
+      # -----------------------------
+      - name: Build test image
+        uses: docker/build-push-action@v7
+        with:
+          target: test
+          load: true
+          tags: local/test:latest
+
+      #Linter local
+
+      # -----------------------------
+      # SonarCloud (analysis + gate)
+      # -----------------------------
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v6
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      # - name: Sonar Quality Gate (fail if red)
+      #   uses: SonarSource/sonarcloud-quality-gate-action@v1
+      #   timeout-minutes: 5
+      #   env:
+      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      # -----------------------------
+      # Build final image
+      # -----------------------------
+      - name: Build final image (local)
+        uses: docker/build-push-action@v7
+        with:
+          target: final
+          load: true
+          tags: ${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:${{ github.sha }}
+
+      # -----------------------------
+      # Test "externe" | image de prod (exemple simple, a remplacer par un runner dédié)
+      # -----------------------------
+      - name: Create network
+        run: docker network create ci-net
+
+      - name: Start DB
+        run: |
+          docker run -d --name db \
+          --network ci-net \
+          -e MARIADB_ROOT_PASSWORD=root \
+          -e MARIADB_DATABASE=testdb \
+          mariadb:11
+
+      - name: Wait DB
+        run: |
+          until docker exec db mariadb-admin ping -proot --silent; do
+          sleep 1
+          done
+
+      - name: Inject password file (web app)
+        run: |
+          echo "root" > /tmp/pass
+          
+      - name: Run prod image
+        run: |
+          docker run -d --name app \
+          --network ci-net \
+          -e DB_HOST=db \
+          -e DB_NAME=testdb \
+          -e DB_USER=root \
+          -e PASSWORD_FILE_PATH=/tmp/pass \
+          -p 8080:80 \
+          ${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:${{ github.sha }}
+
+          docker cp /tmp/pass app:/tmp/pass
+
+      - name: Exemple test image de prod - HTTP smoke test
+        run: |
+          for i in {1..30}; do
+            curl -f http://localhost:8080/database.php | grep "message-" && exit 0
+            sleep 1
+            done
+          exit 1
+      # -----------------------------
+      # Docker Scout (fail on critical)
+      # -----------------------------
+      - name: Docker Scout CVE scan (gating)
+        uses: docker/scout-action@v1
+        with:
+          image: ${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:${{ github.sha }}
+          command: cves
+          only-severities: critical
+          exit-code: true
+
+      # -----------------------------
+      # Push only if everything passed
+      # -----------------------------
+      - name: Push image
+        run: |
+          docker push ${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:${{ github.sha }}
+          docker tag \
+                     ${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:${{ github.sha }} \
+                     ${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:latest
+          docker push \
+                     ${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:latest

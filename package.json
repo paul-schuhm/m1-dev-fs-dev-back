@@ -1,21 +1,43 @@
 {
-  "name": "billetterie",
-  "version": "1.0.0",
-  "description": "",
+  "name": "api",
+  "version": "0.1.0",
+  "description": "Ticketing system web API",
   "main": "index.js",
   "scripts": {
-    "dev": "NODE_ENV=developement node --watch index.js",
-    "gen-oad": "node gen-oad.js"
+    "prepare": "husky",
+    "gen-oad": "node gen-oad.js",
+    "dev": "nodemon --watch src --ext js,json --inspect=0.0.0.0:9230 kernel.js",
+    "build": "node esbuild.config.js",
+    "test": "npm run test" 
+  },
+  "lint-staged": {
+    "*.js": [
+      "eslint --fix --max-warnings=0"
+    ]
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "dotenv": "^16.4.5",
     "express": "^5.2.1",
-    "swagger-ui-express": "^5.0.1"
+    "mysql2": "^3.6.2"
   },
   "devDependencies": {
-    "swagger-autogen": "^2.23.7"
+    "swagger-autogen": "^2.23.7",
+    "swagger-ui-express": "^5.0.1",
+    "@eslint/js": "^9.39.4",
+    "esbuild": "^0.28.0",
+    "eslint": "^9.39.4",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-sonarjs": "^4.0.2",
+    "eslint-plugin-unicorn": "^64.0.0",
+    "globals": "^17.5.0",
+    "husky": "^9.1.7",
+    "jest": "^30.3.0",
+    "lint-staged": "^16.4.0",
+    "nodemon": "^3.1.14",
+    "supertest": "^7.2.2"
   }
 }

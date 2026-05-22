@@ -16,11 +16,12 @@ const routerHome = require('./router/v1/homeRouter')
 // Enregistrement routeur principal pour chaque version
 app.use("/", routerHome);
 app.use("/v1", routerv1);
+
 // Pour une éventuelle v2 de l'API
 // app.use('/v2', routerv2);
 
 // Dernier middleware, error handler
-app.use(function (err, req, res, next) {
+app.use(function (err, req, res) {
     // set locals, only providing error in development
     res.locals.message = err.message;
     res.locals.error = req.app.get("env") === "development" ? err : {};

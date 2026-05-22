@@ -48,9 +48,10 @@ Légende:
 |   `admin`	| Role réservé au gestionnaire du service 	|   Enum	| 	|   |  |
 |   `client`	| Role réservé aux clients du service 	|   Enum	| 	| Attribué par défaut à un nouvel utilisateur  |  |
 
-Les spécifications initiales sont encore trop ouvertes. Voici quelques questions métier à éclaircir:
+Les spécifications initiales sont encore trop ouvertes. Voici **quelques questions métier à éclaircir** :
 
 - Quelle est la date limite pour annuler une réservation ? Jusqu'à la dernière minute ? Une semaine ? Un jour ?
+- Combien de places un même utilisateur peut réserver pour un concert donné ?
 
 ## Ressources
 
@@ -78,7 +79,7 @@ On définit ici les représentations des ressources envoyées par le serveur au 
 
 ### La liste des concerts à venir `/concerts`
 
-Schéma type
+Schéma type :
 
 ~~~JSON
 {
@@ -130,15 +131,14 @@ Schéma type
 
 Le client enverra sa représentation au format `application/x-www-form-urlencoded` (formulaire), soit de simples `clef=valeur` dans le corps de la requête HTTP.
 
-
 ## Parcours nominal (progression typique des évènements)
 
 Scénario nominal (où tout se passe bien)
 
-1. Un utilisateur accède à la liste des concerts
-2. L'utilisateur repère un concert qui l'intéresse, accède aux détails sur le concert
-3. L'utilisateur décide de réserver une place pour le concert
-4. L'utilisateur confirme sa réservation
+1. Un utilisateur **accède à la liste des concerts**
+2. L'utilisateur repère un concert qui l'intéresse, **accède aux détails sur le concert**
+3. L'utilisateur **réserve** une place pour le concert
+4. L'utilisateur **confirme** sa réservation
 
 ## Cas d'erreurs
 

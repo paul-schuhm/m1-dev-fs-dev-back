@@ -1,0 +1,35 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: api-prod
+    ports:
+      - '${API_PORT:-3000}:3000' # API server
+    environment:
+      NODE_ENV: production
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: '${MEMORY_LIMIT:-2G}'
+          cpus: '${CPU_LIMIT:-1.0}'
+        reservations:
+          memory: '${MEMORY_RESERVATION:-512M}'
+          cpus: '${CPU_RESERVATION:-0.5}'
+  db:
+    restart: always
+  nginx:
+    image: nginx:1.31.0-alpine
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "8080:80"  # On accède au Load Balancer via le port 8080
+    depends_on:
+      - api
+    networks:
+      - app-network

@@ -55,10 +55,9 @@ function listeConcertsToResourceObject(concerts, baseUrl, current_page, next_pag
 /**
  * Retourne une représentation Resource Object (HAL) d'une erreur de traitement d'une requête HTTP
  * @param {*} errorData 
- * @param {*} baseUrl 
  * @returns 
  */
-function errorToResourceObject(errorData, baseUrl) {
+function errorToResourceObject(errorData) {
     return {
         _links: {
             self: halLinkObject(errorData.url, 'string'),

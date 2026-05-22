@@ -1,0 +1,26 @@
+services:
+  api:
+    build:
+      context: .
+      target: development
+    container_name: api-dev
+    ports:
+      - '${API_PORT:-3000}:3000' # API server
+      - '${DEBUG_PORT:-9229}:9229' # Node.js debugger
+    develop:
+      watch:
+        - path: ./src/
+          action: sync
+          target: /app/src
+        - action: rebuild
+          path: ./package.json  
+  adminer:
+    image: adminer
+    restart: always
+    depends_on:
+      - db
+    container_name: adminer
+    ports:
+      - ${HOST_PORT_ADMINER}:8080
+    networks:
+      - api-network
