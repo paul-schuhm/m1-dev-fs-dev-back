@@ -5,7 +5,7 @@
     - [Pipeline CI](#pipeline-ci)
   - [Installer et lancer le projet](#installer-et-lancer-le-projet)
   - [Tester avec cURL et jq](#tester-avec-curl-et-jq)
-  - [Lancer le projet (env de prod)](#lancer-le-projet-env-de-prod)
+  - [Lancer le projet (environnement de production)](#lancer-le-projet-environnement-de-production)
   - [Build image de prod de la web API](#build-image-de-prod-de-la-web-api)
   - [(Re)Générer la documentation OpenAPI](#regénérer-la-documentation-openapi)
   - [Accéder à la documentation OpenAPI](#accéder-à-la-documentation-openapi)
@@ -60,7 +60,7 @@ curl "localhost:3000/v1/concerts?offset=1&limit=3" | jq '._embedded.concerts[] |
 curl "localhost:3000/v1/concerts?offset=1&limit=3" | jq '._links'
 ~~~
 
-## Lancer le projet (env de prod)
+## Lancer le projet (environnement de production)
 
 ~~~bash
 docker compose -f compose.yaml -f compose.prod.yaml --env-file .env.prod up -d --build
@@ -129,8 +129,6 @@ Nous reprenons la démarche générale, proposée par [Leonard Richardson](https
 8. **Envisager** la progression typique des évènements: qu'est-ce qui est censé se produire ? [Le flux de contrôle standard comme le protocole de publication Atom](https://www.ibm.com/docs/fr/integration-designer/8.5.5?topic=formats-atom-feed-format) peut aider.
 9. **Considérer** les cas d'erreurs: qu'est-ce qui peut mal se passer ? Que faire dans ce cas ?
 
-
-
 ## Améliorations à prévoir
 
 - Créer et utiliser un utilisateur `mysql` différent de `root` dédié à l'application ;
@@ -169,6 +167,7 @@ Nous reprenons la démarche générale, proposée par [Leonard Richardson](https
 
 - [jq](https://jqlang.org/), *sed* for json data
 - [testcontainers](https://testcontainers.com/), librairie open source fournissant une API pour instancier des dépendances *stateful* (ex: base de données) pour les tests d'intégration
+- [supertest](https://www.npmjs.com/package/supertest), tests au niveau de la couche http
 - [Husky](https://typicode.github.io/husky/), gestion explicite et partageable de hooks *pre-commit*
 - [eslint](https://eslint.org/), linter et analyse statique des sources js
 - [sonarjs](https://www.npmjs.com/package/eslint-plugin-sonarjs), plugin d'eslint pour la détection de *code smell*

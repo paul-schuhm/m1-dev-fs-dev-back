@@ -9,9 +9,9 @@ services:
       - '${DEBUG_PORT:-9229}:9229' # Node.js debugger
     develop:
       watch:
-        - path: ./src/
+        - path: ./src
           action: sync
-          target: /app/src
+          target: /app
         - action: rebuild
           path: ./package.json  
   adminer:

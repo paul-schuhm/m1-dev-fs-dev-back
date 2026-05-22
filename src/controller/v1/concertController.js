@@ -31,7 +31,7 @@ function all(req, res, next) {
     let query = {
         offset: 0,
         limit: pagination.LIMIT_DEFAULT,
-        // sort_by, sort_order, filter_by
+        // sort_by, sort_order, filter_by, etc.
     };
 
     //Validation des paramètres d'URL
@@ -42,10 +42,7 @@ function all(req, res, next) {
             //Met a jour les paramètres par défaut.
             query.offset = Number.parseInt(req.query.offset);
         } else {
-            
             //Erreur: Bad request
-
-            //A terminer : Délègue au middleware gestionnaire d'erreur...
             res.locals.errorResponse = hal.errorToResourceObject({
                 code: 400,
                 url: req.originalUrl,
@@ -54,7 +51,8 @@ function all(req, res, next) {
                 description: 'offset must be an integer, positive or nul',
                 timestamp: new Date().getTime(),
             }, req.baseUrl);
-            next();
+            //Interrupt
+            return next();
         }
     }
 
@@ -68,7 +66,7 @@ function all(req, res, next) {
         }
     }
 
-    //1. Appeller le repository pour récupérer les données
+    //1. Appeler le repository pour récupérer les données
     const concerts = concertRepository.all();
 
     //Filtrer les concerts passés

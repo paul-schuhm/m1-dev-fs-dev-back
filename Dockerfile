@@ -70,7 +70,9 @@ ENV NODE_ENV=development \
     NPM_CONFIG_LOGLEVEL=warn
 
 # Copy source files
-COPY src/ ./
+COPY src/ ./src
+
+COPY tests/ ./tests/
 
 # Ensure all directories have proper permissions
 RUN chown -R nodejs:nodejs /app && \
