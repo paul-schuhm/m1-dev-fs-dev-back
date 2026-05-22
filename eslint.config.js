@@ -1,6 +1,7 @@
 const js = require("@eslint/js");
 const globals = require("globals");
 const sonarjs = require("eslint-plugin-sonarjs");
+const stylistic = require("@stylistic/eslint-plugin");
 
 module.exports = [
   // base ESLint recommended rules
@@ -20,6 +21,7 @@ module.exports = [
 
     plugins: {
       sonarjs,
+      "@stylistic": stylistic,
     },
 
     rules: {
@@ -36,6 +38,16 @@ module.exports = [
        * === NODE FRIENDLY ===
        */
       "no-process-exit": "off",
+
+      /*
+       * === FORMATTING / STYLISTIC ===
+       * Règles de formatage corrigées automatiquement par `eslint --fix`
+       */
+      "@stylistic/indent": ["error", 4], // Force 4 espaces pour l'indentation
+      "@stylistic/quotes": ["error", "single"], // Force les guillemets simples ''
+      "@stylistic/semi": ["error", "always"], // Force le point-virgule en fin de ligne ;
+      "@stylistic/comma-dangle": ["error", "always-multiline"], // Virgule finale sur les objets multilignes
+      "@stylistic/no-multiple-empty-lines": ["error", { max: 1 }], // Pas plus d'une ligne vide consécutive
 
       /*
        * === SONARJS (quality / smells) ===

@@ -7,11 +7,12 @@
     "prepare": "husky",
     "gen-oad": "node gen-oad.js",
     "dev": "nodemon --watch src --ext js,json --inspect=0.0.0.0:9230 src/kernel.js",
-    "build": "node esbuild.config.js",
-    "test": "jest --passWithNoTests --runInBand"
+    "build": "node esbuild.config.mjs",
+    "test": "jest --passWithNoTests --runInBand",
+    "lint": "eslint src/**/*.js --max-warnings=0"
   },
   "lint-staged": {
-    "*.js": [
+    "src/*.js": [
       "eslint --fix --max-warnings=0"
     ]
   },
@@ -25,9 +26,10 @@
     "mysql2": "^3.6.2"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.4",
     "esbuild": "^0.28.0",
     "eslint": "^9.39.4",
+    "@eslint/js": "^9.39.4",
+    "@stylistic/eslint-plugin": "^5.10.0",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-sonarjs": "^4.0.2",
     "eslint-plugin-unicorn": "^64.0.0",

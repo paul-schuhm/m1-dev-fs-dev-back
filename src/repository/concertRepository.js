@@ -2,6 +2,7 @@
 
 "use strict";
 
+// A remplacer par un appel à une db
 const concerts = require("../data/db");
 const createConcert = require("../model/concert");
 

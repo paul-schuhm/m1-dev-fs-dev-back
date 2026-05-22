@@ -1,4 +1,4 @@
-// Dummy data - Stockage en UTC (Z = Zulu/UTC)
+// Dummy data - Stockage en UTC
 const concerts = [
   {
     artist: "The Midnight Echo",

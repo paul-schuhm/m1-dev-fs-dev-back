@@ -11,29 +11,12 @@ RUN addgroup -g 1001 -S nodejs && \
     chown -R nodejs:nodejs /app
 
 # ========================================
-# Dependencies Stage (installe les deps de prod)
-# ========================================
-
-FROM base AS deps
-# Copy package files
-COPY package*.json ./
-
-# Install production dependencies
-RUN --mount=type=cache,target=/root/.npm,sharing=locked \
-    npm ci --omit=dev && \
-    npm cache clean --force
-
-# Set proper ownership
-RUN chown -R nodejs:nodejs /app
-
-
-# ========================================
 # Build Dependencies Stage (installes deps de dev)
 # ========================================
 FROM base AS build-deps
 
 # Copy package files
-COPY package*.json .
+COPY package*.json eslint.config.*s esbuild.config.*s ./
 
 # Install all dependencies with build optimizations
 # Crée un espace de stockage persistant (un cache) partagé entre tes différentes sessions de build Docker
@@ -44,6 +27,21 @@ RUN --mount=type=cache,target=/root/.npm,sharing=locked \
 # Set proper ownership
 RUN chown -R nodejs:nodejs /app
 
+# ========================================
+# Dependencies Stage (installe les deps de prod)
+# ========================================
+
+FROM base AS deps
+# Copy package files
+COPY package*.json ./
+
+# Install production dependencies
+RUN --mount=type=cache,target=/root/.npm,sharing=locked \
+     npm ci --omit=dev --ignore-scripts && \
+     npm cache clean --force
+
+# Set proper ownership
+RUN chown -R nodejs:nodejs /app
 
 # ========================================
 # Build Stage (concatène en un script avec esbuild)
@@ -59,7 +57,6 @@ RUN npm run build
 # Set proper ownership
 RUN chown -R nodejs:nodejs /app
 
-
 # ========================================
 # Development Stage (application env de dev)
 # ========================================
@@ -71,7 +68,6 @@ ENV NODE_ENV=development \
 
 # Copy source files
 COPY src/ ./src
-
 COPY tests/ ./tests/
 
 # Ensure all directories have proper permissions
@@ -123,19 +119,25 @@ CMD ["node", "dist/server.js"]
 
 
 # ========================================
-# Test Stage (execute la suite de tests)
+# Test Stage (execute la suite de tests "internes")
 # ========================================
-# FROM build-deps AS test
+FROM build-deps AS test
 
-# # Set environment
-# ENV NODE_ENV=test \
-#     CI=true
+# Set environment
+ENV NODE_ENV=test \
+    CI=true
 
-# # Copy source files
-# COPY --chown=nodejs:nodejs . .
+# Copy source files
+COPY src/ ./src
+COPY tests/ ./tests/
+COPY eslint.config.js .
 
-# # Switch to non-root user
-# USER nodejs
+# Ensure all directories have proper permissions
+RUN chown -R nodejs:nodejs /app && \
+    chmod -R 755 /app
 
-# # Run tests with coverage
-# CMD ["npm", "run", "test"]
+# Switch to non-root user
+USER nodejs
+
+# Run tests with coverage
+CMD ["npm", "run", "test"]

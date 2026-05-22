@@ -37,3 +37,4 @@ compose*.yml
 # Non-essential configs (keep build configs)
 *.config.js
 !esbuild.config.js
+!eslint.config.js
