@@ -1,8 +1,8 @@
 # Source : https://docs.docker.com/guides/nodejs/containerize/
 
-# ========================================
+# ================================================
 # Base Image (basé sur les Docker Hardened Images)
-# ========================================
+# ================================================
 FROM dhi.io/node:24-alpine3.22-dev AS base
 WORKDIR /app
 # Create non-root user for security
@@ -10,9 +10,9 @@ RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001 -G nodejs && \
     chown -R nodejs:nodejs /app
 
-# ========================================
+# ================================================
 # Build Dependencies Stage (installes deps de dev)
-# ========================================
+# ================================================
 FROM base AS build-deps
 
 # Copy package files
@@ -27,9 +27,9 @@ RUN --mount=type=cache,target=/root/.npm,sharing=locked \
 # Set proper ownership
 RUN chown -R nodejs:nodejs /app
 
-# ========================================
+# ================================================
 # Dependencies Stage (installe les deps de prod)
-# ========================================
+# ================================================
 
 FROM base AS deps
 # Copy package files
@@ -43,9 +43,9 @@ RUN --mount=type=cache,target=/root/.npm,sharing=locked \
 # Set proper ownership
 RUN chown -R nodejs:nodejs /app
 
-# ========================================
+# ================================================
 # Build Stage (concatène en un script avec esbuild)
-# ========================================
+# ================================================
 FROM build-deps AS build
 
 # Copy only necessary files for building (respects .dockerignore)
@@ -57,9 +57,9 @@ RUN npm run build
 # Set proper ownership
 RUN chown -R nodejs:nodejs /app
 
-# ========================================
+# ================================================
 # Development Stage (application env de dev)
-# ========================================
+# ================================================
 FROM build-deps AS development
 
 # Set environment
@@ -75,11 +75,6 @@ COPY oad.json .
 COPY src/ ./src
 COPY tests/ ./tests/
 
-# Ensure all directories have proper permissions
-# RUN chown -R nodejs:nodejs /app && \
-#     chmod -R 755 /app
-# # Switch to non-root user
-# USER nodejs
 USER root
 
 # Expose ports
@@ -88,10 +83,9 @@ EXPOSE 3000 9229
 # Start development server
 CMD ["npm", "run", "dev"]
 
-
-# ========================================
+# ================================================
 # Production Stage (application env de prod)
-# ========================================
+# ================================================
 FROM dhi.io/node:24-alpine3.22-dev AS production
 
 # Set working directory
@@ -123,9 +117,9 @@ EXPOSE 3000
 CMD ["node", "dist/server.js"]
 
 
-# ========================================
+# ================================================
 # Test Stage (execute la suite de tests "internes")
-# ========================================
+# ================================================
 FROM build-deps AS test
 
 # Set environment

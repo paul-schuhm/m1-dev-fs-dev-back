@@ -2,7 +2,7 @@ const concertRepository = require('../../repository/concertRepository');
 const hal = require('../../service/hal');
 const pagination = require('../../service/paginate');
 
-function all(req, res, next) {
+async function all(req, res, next) {
 
     /* #swagger.parameters['offset'] = {
         in: 'query',
@@ -67,27 +67,16 @@ function all(req, res, next) {
     }
 
     //1. Appeler le repository pour récupérer les données
-    const concerts = concertRepository.all();
-
-    //Filtrer les concerts passés
-    //Remarque : A déplacer en base de données
-    const today = new Date();
-    const upcoming_concerts = concerts.filter((c) => new Date(c.date) > today);
-
-    //Trier les concerts du plus au moins récent
-    //Remarque : A déplacer en base de données
-    upcoming_concerts.sort((a, b) => {
-        return new Date(a.date).getTime() - new Date(b.date).getTime();
-    });
+    const concerts = await concertRepository.upcomingConcerts();
 
     //Paginer les résultats
     //Remarques : A déplacer en base de données
-    const page = upcoming_concerts.slice(
+    const page = concerts.slice(
         query.offset,
         query.offset + query.limit,
     );
 
-    const hasNext = query.offset + query.limit < upcoming_concerts.length;
+    const hasNext = query.offset + query.limit < concerts.length;
     const hasPrev = query.offset > 0;
 
     const current_url = `${req.baseUrl}?offset=${query.offset}&limit=${query.limit}`;

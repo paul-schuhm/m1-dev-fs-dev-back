@@ -2,21 +2,24 @@
 
 'use strict';
 
-// A remplacer par un appel à une db
-const concerts = require('../data/db');
+const db = require('../data/db');
 const createConcert = require('../model/concert');
 
 /**
- * Retourne tous les concerts
+ * Retourne tous les concerts à venir
  */
-function all() {
-    //Générer temporairement un identifiant (on le remplacera par son id reel quand on aura une base de données).
-    return concerts.map((c, i) =>
-        createConcert({
-            id: i + 1,
-            ...c,
-        }),
-    );
+async function upcomingConcerts() {    
+    const [rows] = await db.connexion.execute('SELECT * FROM Concert WHERE date_start > CURRENT_DATE ORDER BY date_start ASC');
+
+    return rows.map(concert => createConcert(
+        {
+            id: concert.id, 
+            artist: concert.performer, 
+            date: concert.date_start, 
+            location: concert.location, 
+            nb_seats: concert.nb_seats,
+        },
+    ));
 }
 
-module.exports = { all };
+module.exports = { upcomingConcerts };

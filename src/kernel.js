@@ -31,17 +31,14 @@ app.use(function (req, res, next) {
 // Dernier middleware : gestionnaire d'erreur, détecté par ses 4 arguments (prefix _ (_next) pour dire a eslint d'ignorer l'arg non utilisé)
 // @see https://expressjs.com/fr/5x/guide/error-handling/#%C3%A9criture-des-gestionnaires-derreurs
 app.use(function (err, req, res, _next) {
-    // set locals, only providing error in development
-    res.locals.message = err.message;
-    res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-    // On ne logue l'erreur complète que si on est en développement
+    res.locals.message = err.message;
+    // On ne logue et retourne l'erreur complète que si on est en environnement développement
+    res.locals.error = req.app.get('env') === 'development' ? err : {};
     if (process.env.NODE_ENV === 'development') {
         console.error(err.stack);
     }
-    // render the error page
     res.status(err.status || 500);
-    // A compléter.
     res.json(res.locals.message);
 });
 
