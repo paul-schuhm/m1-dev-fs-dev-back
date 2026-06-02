@@ -66,16 +66,21 @@ FROM build-deps AS development
 ENV NODE_ENV=development \
     NPM_CONFIG_LOGLEVEL=warn
 
+# Build openapi spec
+COPY build-openapi-spec.js .
+RUN npm run gen-oad
+COPY oad.json .
+
 # Copy source files
 COPY src/ ./src
 COPY tests/ ./tests/
 
 # Ensure all directories have proper permissions
-RUN chown -R nodejs:nodejs /app && \
-    chmod -R 755 /app
-
-# Switch to non-root user
-USER nodejs
+# RUN chown -R nodejs:nodejs /app && \
+#     chmod -R 755 /app
+# # Switch to non-root user
+# USER nodejs
+USER root
 
 # Expose ports
 EXPOSE 3000 9229

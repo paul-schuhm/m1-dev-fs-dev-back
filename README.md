@@ -39,7 +39,6 @@
 mkdir db-data db
 echo "password" > db/password.txt
 cp .env.dist .env
-npm run gen-oad
 docker compose -f compose.yaml -f compose.dev.yaml build api
 docker compose -f compose.yaml -f compose.dev.yaml up --watch
 ~~~

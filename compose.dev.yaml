@@ -11,9 +11,9 @@ services:
       watch:
         - path: ./src
           action: sync
-          target: /app
+          target: /app/src
         - action: rebuild
-          path: ./package.json  
+          path: ./package.json
   adminer:
     image: adminer
     restart: always

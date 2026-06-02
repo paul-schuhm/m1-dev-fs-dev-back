@@ -1,10 +1,10 @@
-const swaggerAutogen = require("swagger-autogen")();
+const swaggerAutogen = require('swagger-autogen')();
 
 //Fichier de sortie (doc générée)
-const outputFile = "./oad.json";
+const outputFile = './oad.json';
 //Les routes à documenter (via des annotations swagger)
 const endpointsFiles = [
-    "./index.js"
+    './src/kernel.js',
 ];
 //Métadonnées générales
 const doc = {
@@ -14,7 +14,7 @@ const doc = {
         version: '0.1',
         description: 'Documentation du service de billeterrie',
     },
-    schemes: ["http"],
+    schemes: ['http'],
 };
 
 //Génération de la doc
