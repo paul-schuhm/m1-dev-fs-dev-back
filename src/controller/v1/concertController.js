@@ -1,6 +1,6 @@
-const concertRepository = require("../../repository/concertRepository");
-const hal = require("../../service/hal");
-const pagination = require("../../service/paginate");
+const concertRepository = require('../../repository/concertRepository');
+const hal = require('../../service/hal');
+const pagination = require('../../service/paginate');
 
 function all(req, res, next) {
 
@@ -25,7 +25,7 @@ function all(req, res, next) {
     //Important : Toujours valider les paramètres d'URL (clé et valeur) !
 
     //Déclarer les paramètres d'URL acceptés
-    const paginateEnum = ["offset", "limit"];
+    const paginateEnum = ['offset', 'limit'];
 
     //Comportement par défaut
     let query = {
@@ -35,7 +35,7 @@ function all(req, res, next) {
     };
 
     //Validation des paramètres d'URL
-    if ("offset" in req.query && paginateEnum.includes("offset")) {
+    if ('offset' in req.query && paginateEnum.includes('offset')) {
         //offset : doit être un entier, positif ou nul
         const offset = Number.parseInt(req.query.offset, 10);
         if (!isNaN(offset) && offset > -1) {
@@ -57,7 +57,7 @@ function all(req, res, next) {
     }
 
     //Validation des paramètres d'URL
-    if ("limit" in req.query && paginateEnum.includes("limit")) {
+    if ('limit' in req.query && paginateEnum.includes('limit')) {
         //limit : doit être un entier positif
         const limit = Number.parseInt(req.query.limit, 10);
         if (!isNaN(limit) && limit > 0 && limit <= pagination.LIMIT_MAX) {
@@ -108,10 +108,10 @@ function all(req, res, next) {
 
     //Fabrication de la réponse HTTP
     //Content type
-    res.set("Content-Type", "application/hal+json");
+    res.set('Content-Type', 'application/hal+json');
     //Code status
     res.status(200);
-    //Fin au cycle requete/repose
+    //Fin au cycle requête/repose
     res.json(response);
 }
 

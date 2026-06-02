@@ -14,8 +14,8 @@ const paginate = require('./paginate');
  */
 function halLinkObject(
     url,
-    type = "",
-    name = "",
+    type = '',
+    name = '',
     templated = false,
     deprecation = false,
 ) {
@@ -38,10 +38,10 @@ function listeConcertsToResourceObject(concerts, baseUrl, current_page, next_pag
     return {
         _links: [
             {
-                self: halLinkObject(baseUrl + `/concerts{?offset=0&limit=${paginate.LIMIT_DEFAULT}}`, "string", '', true),
+                self: halLinkObject(baseUrl + `/concerts{?offset=0&limit=${paginate.LIMIT_DEFAULT}}`, 'string', '', true),
                 current_page: current_page,
                 next_page: next_page,
-                prev_page: prev_page
+                prev_page: prev_page,
             },
         ],
         _embedded: concerts.map((c) => concertItemListToResourceObject(c, baseUrl)),
@@ -61,14 +61,14 @@ function errorToResourceObject(errorData) {
     return {
         _links: {
             self: halLinkObject(errorData.url, 'string'),
-            path: halLinkObject(errorData.path)
+            path: halLinkObject(errorData.path),
         },
         url: errorData.url,
         source: errorData.source,
         description: errorData.description,
         timestamp: errorData.timestamp,
-        error: errorData.code
-    }
+        error: errorData.code,
+    };
 }
 
 /**
@@ -81,22 +81,22 @@ function concertItemListToResourceObject(concertData, baseUrl) {
         _links:
         {
             self: halLinkObject(
-                baseUrl + "/concerts" + "/" + concertData.id,
-                "string",
+                baseUrl + '/concerts' + '/' + concertData.id,
+                'string',
             ),
             reservation: halLinkObject(
-                baseUrl + "/concerts" + "/" + concertData.id + "/reservations",
-                "string",
+                baseUrl + '/concerts' + '/' + concertData.id + '/reservations',
+                'string',
             ),
         },
         remainingAttendeeCapacity:
             concertData.nb_seats - (concertData.nb_reservations ?? 0),
         date_start: concertData.date,
-        local_date: new Date(concertData.date).toLocaleDateString("fr-FR", {
-            timeZone: "Europe/Paris",
+        local_date: new Date(concertData.date).toLocaleDateString('fr-FR', {
+            timeZone: 'Europe/Paris',
         }),
-        local_hour: new Date(concertData.date).toLocaleTimeString("fr-FR", {
-            timeZone: "Europe/Paris",
+        local_hour: new Date(concertData.date).toLocaleTimeString('fr-FR', {
+            timeZone: 'Europe/Paris',
         }),
         performer: concertData.artist,
         location: concertData.location,
@@ -114,7 +114,7 @@ function reservationToResourceObject(data, baseURL) {
         {
             self: halLinkObject(
                 `${baseURL}/concerts/${data.id_concert}/reservations/?`,
-                "string",
+                'string',
             ),
         },
         pseudo: data.id_user,
@@ -134,8 +134,8 @@ function userToResourceObject(utilisateurData, baseURL) {
         _links:
         {
             self: halLinkObject(
-                baseURL + "/utilisateurs" + "/" + utilisateurData.pseudo,
-                "string",
+                baseURL + '/utilisateurs' + '/' + utilisateurData.pseudo,
+                'string',
             ),
         },
         _embedded: {
@@ -150,5 +150,5 @@ module.exports = {
     concertItemListToResourceObject,
     userToResourceObject,
     reservationToResourceObject,
-    listeConcertsToResourceObject
+    listeConcertsToResourceObject,
 };
