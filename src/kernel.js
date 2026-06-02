@@ -21,13 +21,15 @@ app.use('/v1', routerv1);
 // Pour une éventuelle v2 de l'API
 // app.use('/v2', routerv2);
 
+//Match toutes les autres routes (celles qui n'existent pas)
 app.use(function (req, res, next) {
     const err = new Error('Ressource introuvable');
     err.status = 404;
-    next(err); // On passe l'erreur au middleware suivant (le error handler)
+    next(err);
 });
 
-// Dernier middleware : error handler
+// Dernier middleware : gestionnaire d'erreur, détecté par ses 4 arguments (prefix _ (_next) pour dire a eslint d'ignorer l'arg non utilisé)
+// @see https://expressjs.com/fr/5x/guide/error-handling/#%C3%A9criture-des-gestionnaires-derreurs
 app.use(function (err, req, res, _next) {
     // set locals, only providing error in development
     res.locals.message = err.message;
@@ -43,6 +45,9 @@ app.use(function (err, req, res, _next) {
     res.json(res.locals.message);
 });
 
+//Lancement du serveur http
 app.listen(port, () => {
-    console.log(`Web API Ticketing system listening on port ${port}`);
+    if (process.env.NODE_ENV === 'development') {
+        console.log(`Web API Ticketing system listening on port ${port}`);
+    }
 });
