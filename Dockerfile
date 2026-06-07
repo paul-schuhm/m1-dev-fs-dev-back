@@ -146,7 +146,7 @@ CMD ["npm", "run", "test"]
 # ================================================
 FROM node:26-alpine AS api-tests
 WORKDIR /tests
-COPY tests/stateful/package*.json ./
+COPY tests/stateful/package*.json .
 RUN npm ci
-COPY tests/stateful/client.js ./tests
+COPY tests/stateful/client.js .
 CMD ["npm", "run", "test:stateful"]
