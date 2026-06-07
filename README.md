@@ -127,11 +127,11 @@ npm run gen-oad
 1. Formatage et analyse statique avec ESlint
 2. Login Docker Hub et préparation du builder d'image
 3. Tests *internes* : build et execution de l'image test
-4. Analyse statique avec SonarQube
+4. Analyse statique avec SonarQube (production de rapport + quality gate)
 5. Build de l'image finale
 6. Tests *externes* (test de l'image finale dans un environnement proche de la prod)
-7. Analyse de l'image (dépendances) avec Docker Scout
-8. Publication sur Docker Hub de l'image
+7. Analyse de l'image finale (dépendances) avec [Docker Scout](https://docs.docker.com/scout/)
+8. Publication de l'image finale sur Docker Hub (registre public)
 
 ### Tester localement les Github Actions avec `act`
 
@@ -157,7 +157,7 @@ act
 
 ## CD
 
-> A venir...
+> À venir...
 
 ## Guide (TP) : indications à suivre pour mettre en place le projet
 
@@ -190,8 +190,8 @@ Nous reprenons la démarche générale, proposée par [Leonard Richardson](https
 - Développer une série de tests *stateless* pertinente ;
 - Développer une série de tests *stateful* pertinente ;
 - Re-factoriser le workflow `ci` *Github Actions* en plusieurs *jobs* interdépendants
-- **Développer le service de billetterie !**
 - Créer et utiliser un utilisateur `mysql` différent de `root` dédié à l'application avec les bon niveau de permissions ;
+- **Développer le service de billetterie !**
 
 ## Ressources utiles
 
