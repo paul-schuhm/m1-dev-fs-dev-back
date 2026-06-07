@@ -8,7 +8,6 @@
     - [Lancer le projet](#lancer-le-projet)
   - [Tester avec cURL et jq](#tester-avec-curl-et-jq)
   - [Lancer le projet (environnement de production)](#lancer-le-projet-environnement-de-production)
-  - [Build l'image de prod du service web de billeterrie](#build-limage-de-prod-du-service-web-de-billeterrie)
   - [Documentation OpenAPI](#documentation-openapi)
     - [Accéder à la documentation OpenAPI](#accéder-à-la-documentation-openapi)
     - [Re-générer la documentation](#re-générer-la-documentation)
@@ -83,10 +82,11 @@ curl "localhost:3000/v1/concerts?offset=1&limit=3" | jq '._links'
 ## Lancer le projet (environnement de production)
 
 ~~~bash
+cp .env.prod.dist .env.prod
 docker compose -f compose.yaml -f compose.prod.yaml --env-file .env.prod up -d --build
 ~~~
 
-## Build l'image de prod du service web de billeterrie
+Pour *build* l'image de prod du service web de billetterie :
 
 ~~~bash
 docker build --target production --tag api .

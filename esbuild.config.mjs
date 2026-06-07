@@ -4,7 +4,7 @@ const config = {
   entryPoints: ['src/kernel.js'],
   bundle: true,
   platform: 'node',
-  format: 'esm',
+  format: 'cjs',
   outfile: 'dist/server.js',
   minify: process.env.NODE_ENV === 'production',
   sourcemap: true,

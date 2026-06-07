@@ -32,4 +32,4 @@ services:
     depends_on:
       - api
     networks:
-      - app-network
+      - api-network
