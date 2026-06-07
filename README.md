@@ -25,7 +25,9 @@
     - [Schémas utilisés](#schémas-utilisés)
     - [Docker et compose](#docker-et-compose)
     - [CI avec Github Actions](#ci-avec-github-actions)
-    - [Tooling](#tooling)
+  - [Tooling](#tooling)
+    - [Sources (Node.js)](#sources-nodejs)
+    - [Github Actions](#github-actions)
 
 ## Pré-requis
 
@@ -129,7 +131,6 @@ La documentation OpenAPI est servie sur l'URL `/doc`, en environnement de dével
 7. Analyse de l'image (dépendances) avec Docker Scout
 8. Publication sur Docker Hub de l'image
 
-
 ### Tester localement les Github Actions avec `act`
 
 [act](https://github.com/nektos/act) permet de tester les *Github Actions*, localement via des conteneurs Docker.
@@ -214,15 +215,21 @@ Nous reprenons la démarche générale, proposée par [Leonard Richardson](https
 - [Events that trigger workflows](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows), documentation de Github Actions
 - [Scan your code with SonarQube](https://github.com/marketplace/actions/official-sonarqube-scan), documentation officielle de Github Actions
 - [Adding analysis to GitHub Actions workflow](https://docs.sonarsource.com/sonarqube-server/devops-platform-integration/github-integration/adding-analysis-to-github-actions-workflow)
-- [act](https://github.com/nektos/act), tester les *Github Actions* localement *avant* de les exécuter sur Github
-- [actionlint](https://github.com/rhysd/actionlint), analyseur statique des fichiers de Github Actions
 - [Docker Scout](https://docs.docker.com/scout/), analyseur d'images (couche par couche), pour détecter des vulnérabilités
 
-### Tooling
+## Tooling
 
+- curl
 - [jq](https://jqlang.org/), *sed* for json data
-- [testcontainers](https://testcontainers.com/), librairie open source fournissant une API pour instancier des dépendances *stateful* (ex: base de données) pour les tests d'intégration
+
+### Sources (Node.js)
+
 - [supertest](https://www.npmjs.com/package/supertest), tests au niveau de la couche http
 - [Husky](https://typicode.github.io/husky/), gestion explicite et partageable de hooks *pre-commit*
-- [eslint](https://eslint.org/), linter et analyse statique des sources js
+- [eslint](https://eslint.org/), formatage et analyse statique (*linter*) des sources js
 - [sonarjs](https://www.npmjs.com/package/eslint-plugin-sonarjs), plugin d'eslint pour la détection de *code smells*, suite de règles maintenue par SonarQube
+
+### Github Actions
+
+- [act](https://github.com/nektos/act), tester les *Github Actions* localement *avant* de les exécuter sur Github
+- [actionlint](https://github.com/rhysd/actionlint), analyseur statique des fichiers de Github Actions
