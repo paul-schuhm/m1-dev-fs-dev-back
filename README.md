@@ -50,7 +50,7 @@ cp .env.dist .env
 docker compose -f compose.yaml -f compose.dev.yaml build api
 ~~~
 
-Pour le bon fonctionnement de la CI (action SonarQube), **créer** un fichier `sonar-project.properties` à la racine du dépôt avec les données sur votre projet SonarCloud :
+Pour le bon fonctionnement de la CI (action SonarQube), **créer** ou **modifier** le fichier `sonar-project.properties` à la racine du dépôt avec les données sur votre projet SonarCloud :
 
 ~~~bash
 sonar.organization=A FOURNIR
@@ -147,12 +147,14 @@ npm run gen-oad
 #Lister les jobs
 act -l
 #Dry-run
-act --secret-file .secrets --var-file .vars -W .github/workflows/main.yml -n
-#Executer tous les jobs
-act --secret-file .secrets --var-file .vars -W .github/workflows/main.yml
-#Executer uniquement le job ci
-act --secret-file .secrets --var-file .vars -W .github/workflows/main.yml -j ci
+act -n
+#Run
+act
 ~~~
+
+> La configuration d'act est définie dans le fichier `.actrc` et chargée automatiquement. Le fichier `act-events.json` permet de simuler des évènements sur la branche et fournir les métadonnées nécessaires pour être iso avec Github.
+
+> [Voir le bon guide de Stéphane Robert](https://blog.stephane-robert.info/docs/pipeline-cicd/github/act/) sur le sujet
 
 ## CD
 
@@ -193,6 +195,7 @@ Nous reprenons la démarche générale, proposée par [Leonard Richardson](https
 - Améliorer et personnaliser les règles de l'analyse statique et fixer un niveau d'exigence adapté (via `eslint`) ;
 - Développer une série de tests *stateless* pertinente ;
 - Développer une série de tests *stateful* pertinente ;
+- Re-factoriser le workflow `ci` *Github Actions* en plusieurs *jobs* interdépendants
 
 ## Ressources utiles
 
@@ -218,6 +221,7 @@ Nous reprenons la démarche générale, proposée par [Leonard Richardson](https
 - [Events that trigger workflows](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows), documentation de Github Actions
 - [Scan your code with SonarQube](https://github.com/marketplace/actions/official-sonarqube-scan), documentation officielle de Github Actions
 - [Adding analysis to GitHub Actions workflow](https://docs.sonarsource.com/sonarqube-server/devops-platform-integration/github-integration/adding-analysis-to-github-actions-workflow)
+- [SonarQube Quality Gate check ](https://github.com/SonarSource/sonarqube-quality-gate-action), dépôt des *actions* fournie par SonarCloud
 - [Docker Scout](https://docs.docker.com/scout/), analyseur d'images (couche par couche), pour détecter des vulnérabilités
 
 ## Tooling

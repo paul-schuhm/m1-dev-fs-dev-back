@@ -4,6 +4,6 @@ db
 .env
 .env.prod
 dist/
-sonar-*
 .secrets
 .vars
+.scannerwork

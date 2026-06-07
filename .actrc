@@ -1,0 +1,6 @@
+--secret-file .secrets
+--env GITHUB_REF=refs/heads/main
+--env RUNNER_TOOL_CACHE=/tmp
+--eventpath act-events.json
+--workflows .github/workflows/main.yml
+--bind

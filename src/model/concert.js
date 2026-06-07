@@ -31,8 +31,8 @@ function createConcert({ id, artist, date, location, nb_seats }) {
 
     const parsedDate = new Date(date);
     
-    if (isNaN(parsedDate.getTime())) {
-        throw new Error('The provided date is invalid.');
+    if (Number.isNaN(parsedDate.getTime())) {
+        throw new TypeError('The provided date is invalid.');
     }
 
     if (parsedDate < new Date()) {
