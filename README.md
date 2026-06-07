@@ -9,9 +9,10 @@
   - [Tester avec cURL et jq](#tester-avec-curl-et-jq)
   - [Lancer le projet (environnement de production)](#lancer-le-projet-environnement-de-production)
   - [Build l'image de prod du service web de billeterrie](#build-limage-de-prod-du-service-web-de-billeterrie)
-  - [(Re)Générer la documentation OpenAPI](#regénérer-la-documentation-openapi)
-  - [Accéder à la documentation OpenAPI](#accéder-à-la-documentation-openapi)
-  - [Workflow de développement](#workflow-de-développement)
+  - [Documentation OpenAPI](#documentation-openapi)
+    - [Accéder à la documentation OpenAPI](#accéder-à-la-documentation-openapi)
+    - [Re-générer la documentation](#re-générer-la-documentation)
+  - [*Workflow* de développement](#workflow-de-développement)
   - [Intégration Continue (CI)](#intégration-continue-ci)
     - [Tester localement les Github Actions avec `act`](#tester-localement-les-github-actions-avec-act)
   - [CD](#cd)
@@ -94,17 +95,19 @@ docker build --target production --tag api .
 
 > Ne pas hésiter à se créer un `Makefile` ou des `alias` pour faciliter le lancement de ces commandes !
 
-## (Re)Générer la documentation OpenAPI
+## Documentation OpenAPI
+
+### Accéder à la documentation OpenAPI
+
+En environnement de développement, la documentation OpenAPI interactive est servie sur l'URL `/doc`,
+
+### Re-générer la documentation
 
 ~~~bash
 npm run gen-oad
 ~~~
 
-## Accéder à la documentation OpenAPI
-
-La documentation OpenAPI est servie sur l'URL `/doc`, en environnement de développement.
-
-## Workflow de développement
+## *Workflow* de développement
 
 1. On [lance le projet en mode dev (*hot reload* via le mode *watch* de Compose)](#lancer-le-projet-env-de-dev)
 2. On développe (modifie sources)
