@@ -1,0 +1,16 @@
+services:
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      # On monte le dossier complet au lieu du fichier seul
+      - .:/etc/nginx/live:ro
+    # On dit à Nginx d'aller lire le fichier via le chemin du dossier monté
+    command: /usr/sbin/nginx -g "daemon off;" -c /etc/nginx/live/nginx.conf
+    networks:
+      - api-network
+
+networks:
+  api-network:
+    external: true

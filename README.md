@@ -7,14 +7,13 @@
     - [Installation](#installation)
     - [Lancer le projet](#lancer-le-projet)
   - [Tester avec cURL et jq](#tester-avec-curl-et-jq)
-  - [Lancer le projet (environnement de production)](#lancer-le-projet-environnement-de-production)
   - [Documentation OpenAPI](#documentation-openapi)
     - [Accéder à la documentation OpenAPI](#accéder-à-la-documentation-openapi)
     - [Re-générer la documentation](#re-générer-la-documentation)
   - [*Workflow* de développement](#workflow-de-développement)
   - [Intégration Continue (CI)](#intégration-continue-ci)
     - [Tester localement les Github Actions avec `act`](#tester-localement-les-github-actions-avec-act)
-  - [CD](#cd)
+  - [Mise en production (Continuous deployment/delivery)](#mise-en-production-continuous-deploymentdelivery)
   - [Guide (TP) : indications à suivre pour mettre en place le projet](#guide-tp--indications-à-suivre-pour-mettre-en-place-le-projet)
   - [Cahier des charges (spécifications)](#cahier-des-charges-spécifications)
     - [Méthodologie employée pour concevoir et implémenter l'API REST"like"](#méthodologie-employée-pour-concevoir-et-implémenter-lapi-restlike)
@@ -79,21 +78,6 @@ curl "localhost:3000/v1/concerts?offset=1&limit=3" | jq '._embedded.concerts[] |
 curl "localhost:3000/v1/concerts?offset=1&limit=3" | jq '._links'
 ~~~
 
-## Lancer le projet (environnement de production)
-
-~~~bash
-cp .env.prod.dist .env.prod
-docker compose -f compose.yaml -f compose.prod.yaml --env-file .env.prod up -d --build
-~~~
-
-Pour *build* l'image de prod du service web de billetterie :
-
-~~~bash
-docker build --target production --tag api .
-~~~
-
-> Ne pas hésiter à se créer un `Makefile` ou des `alias` pour faciliter le lancement de ces commandes !
-
 ## Documentation OpenAPI
 
 ### Accéder à la documentation OpenAPI
@@ -155,9 +139,11 @@ act
 
 > [Voir le bon guide de Stéphane Robert](https://blog.stephane-robert.info/docs/pipeline-cicd/github/act/) sur le sujet
 
-## CD
+## Mise en production (Continuous deployment/delivery)
 
-> À venir...
+Déclenchée manuellement (*Continuous Deployment*)
+
+[Voir la documentation sur la mise en production.](./demo-mise-en-production/)
 
 ## Guide (TP) : indications à suivre pour mettre en place le projet
 
@@ -217,7 +203,7 @@ Nous reprenons la démarche générale, proposée par [Leonard Richardson](https
 - [Events that trigger workflows](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows), documentation de Github Actions
 - [Scan your code with SonarQube](https://github.com/marketplace/actions/official-sonarqube-scan), documentation officielle de Github Actions
 - [Adding analysis to GitHub Actions workflow](https://docs.sonarsource.com/sonarqube-server/devops-platform-integration/github-integration/adding-analysis-to-github-actions-workflow)
-- [SonarQube Quality Gate check ](https://github.com/SonarSource/sonarqube-quality-gate-action), dépôt des *actions* fournie par SonarCloud
+- [SonarQube Quality Gate check](https://github.com/SonarSource/sonarqube-quality-gate-action), dépôt des *actions* fournie par SonarCloud
 - [Docker Scout](https://docs.docker.com/scout/), analyseur d'images (couche par couche), pour détecter des vulnérabilités
 
 ## Tooling

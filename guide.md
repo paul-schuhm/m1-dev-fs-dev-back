@@ -305,9 +305,9 @@ GREEN APP ─┘
 
 ## Mise en place
 
-Deux répertoires sur le serveur `/app/blue` et `/app/green`, chacun contenant son propre fichier `compose.yml`
+Deux répertoires sur le serveur `/app/blue` et `/app/green`, chacun contenant son propre fichier `compose.yml` et son propre projet Compose :
 
-1. L'état initial : *Blue* est en production, sur `localhost:3001`
+1. L'état initial : *Blue* est en production, le process Node écoute sur le port `3001`
 2. Nginx est configuré pour rediriger tout le trafic public vers ce port :
 
 ~~~bash
@@ -317,7 +317,7 @@ upstream api_servers {
 }
 ~~~
 
-3. Le déploiement de *Green* : Sans couper le projet *Blue*, **build** la nouvelle image (v1.0.1) et lancer le bloc *Green* sur un autre port, par exemple le port 3002. Les deux systèmes sont actifs en même temps.
+3. Le déploiement de *Green* : Sans couper le projet *Blue*, **build** la nouvelle image (`v1.0.1`) et lancer le bloc *Green* sur un autre port, par exemple le port 3002. Les deux systèmes sont actifs en même temps.
 
 ~~~bash
 #Exemple typique pour déployer green

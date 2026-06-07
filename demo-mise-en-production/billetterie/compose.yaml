@@ -1,0 +1,52 @@
+#Compose file base
+
+services:
+  api:
+    build:
+      context: .
+      target: development
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - MYSQL_HOST=${MYSQL_HOST}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_ROOT_PASSWORD_FILE=${MYSQL_ROOT_PASSWORD_FILE}   
+    secrets:
+      - mysql-root
+    depends_on:
+      db:
+        condition: service_healthy
+    links:
+      - "db:database"
+    networks:
+      - api-network
+  db:
+    image: mysql:9.6.0
+    restart: always
+    secrets:
+      - mysql-root
+    labels:
+      - "autoheal=true"    
+    environment:
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_ROOT_PASSWORD_FILE=${MYSQL_ROOT_PASSWORD_FILE}
+    volumes:
+      - ./init/:/docker-entrypoint-initdb.d/
+      - ./db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-p$$(cat /run/secrets/${MYSQL_ROOT_PASSWORD_FILE})"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - api-network
+volumes:
+  db-data:
+secrets:
+  mysql-root:
+    file: db/password.txt
+
+networks:
+  api-network:
+    name: api-network
+    driver: bridge
