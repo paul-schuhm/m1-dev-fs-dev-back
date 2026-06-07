@@ -4,14 +4,16 @@
   - [Pré-requis](#pré-requis)
     - [Pipeline CI](#pipeline-ci)
   - [Installer et lancer le projet](#installer-et-lancer-le-projet)
+    - [Installation](#installation)
+    - [Lancer le projet](#lancer-le-projet)
   - [Tester avec cURL et jq](#tester-avec-curl-et-jq)
   - [Lancer le projet (environnement de production)](#lancer-le-projet-environnement-de-production)
-  - [Build image de prod de la web API](#build-image-de-prod-de-la-web-api)
+  - [Build l'image de prod du service web de billeterrie](#build-limage-de-prod-du-service-web-de-billeterrie)
   - [(Re)Générer la documentation OpenAPI](#regénérer-la-documentation-openapi)
   - [Accéder à la documentation OpenAPI](#accéder-à-la-documentation-openapi)
-  - [Progression typique (*workflow*)](#progression-typique-workflow)
-  - [CI](#ci)
-    - [Action : analyse statique avec sonarqube](#action--analyse-statique-avec-sonarqube)
+  - [Workflow de développement](#workflow-de-développement)
+  - [Intégration Continue (CI)](#intégration-continue-ci)
+    - [Tester localement les Github Actions avec `act`](#tester-localement-les-github-actions-avec-act)
   - [CD](#cd)
   - [Guide (TP) : indications à suivre pour mettre en place le projet](#guide-tp--indications-à-suivre-pour-mettre-en-place-le-projet)
   - [Cahier des charges (spécifications)](#cahier-des-charges-spécifications)
@@ -36,11 +38,26 @@
 
 ## Installer et lancer le projet
 
+### Installation
+
 ~~~bash
 mkdir db-data db
 echo "password" > db/password.txt
 cp .env.dist .env
 docker compose -f compose.yaml -f compose.dev.yaml build api
+~~~
+
+Pour le bon fonctionnement de la CI (action SonarQube), **créer** un fichier `sonar-project.properties` à la racine du dépôt avec les données sur votre projet SonarCloud :
+
+~~~bash
+sonar.organization=A FOURNIR
+sonar.projectKey=A FOURNIR
+sonar.sources=src
+~~~
+
+### Lancer le projet
+
+~~~bash
 docker compose -f compose.yaml -f compose.dev.yaml up --watch
 ~~~
 
@@ -67,7 +84,7 @@ curl "localhost:3000/v1/concerts?offset=1&limit=3" | jq '._links'
 docker compose -f compose.yaml -f compose.prod.yaml --env-file .env.prod up -d --build
 ~~~
 
-## Build image de prod de la web API
+## Build l'image de prod du service web de billeterrie
 
 ~~~bash
 docker build --target production --tag api .
@@ -85,7 +102,7 @@ npm run gen-oad
 
 La documentation OpenAPI est servie sur l'URL `/doc`, en environnement de développement.
 
-## Progression typique (*workflow*)
+## Workflow de développement
 
 1. On [lance le projet en mode dev (*hot reload* via le mode *watch* de Compose)](#lancer-le-projet-env-de-dev)
 2. On développe (modifie sources)
@@ -97,23 +114,45 @@ La documentation OpenAPI est servie sur l'URL `/doc`, en environnement de dével
 5. Publie le commit sur le dépôt distant
 6. Déclenchement de la [*pipeline* CI](#ci) au merge sur `main`
 
-## CI
+## Intégration Continue (CI)
 
 *Pipeline* d'intégration continue *CI* avec *Github Actions*
 
 <!-- Indiquer le contenu de la pipeline -->
 
-### Action : analyse statique avec sonarqube
+1. Formatage et analyse statique avec ESlint
+2. Login Docker Hub et préparation du builder d'image
+3. Tests *internes* : build et execution de l'image test
+4. Analyse statique avec SonarQube
+5. Build de l'image finale
+6. Tests *externes* (test de l'image finale dans un environnement proche de la prod)
+7. Analyse de l'image (dépendances) avec Docker Scout
+8. Publication sur Docker Hub de l'image
 
-**Créer** un fichier `sonar-project.properties` à la racine du dépôt avec les données sur votre projet SonarCloud :
+
+### Tester localement les Github Actions avec `act`
+
+[act](https://github.com/nektos/act) permet de tester les *Github Actions*, localement via des conteneurs Docker.
+
+1. **Créer** un fichier `.secrets` et y placer les secrets de votre pipeline
+2. **Créer** un fichier `.vars` et y placer les variables de votre pipeline
+
+> Pensez-bien à ajouter ces fichiers à votre `.gitignore` !
 
 ~~~bash
-sonar.organization=
-sonar.projectKey=
-sonar.sources=
+#Lister les jobs
+act -l
+#Dry-run
+act --secret-file .secrets --var-file .vars -W .github/workflows/main.yml -n
+#Executer tous les jobs
+act --secret-file .secrets --var-file .vars -W .github/workflows/main.yml
+#Executer uniquement le job ci
+act --secret-file .secrets --var-file .vars -W .github/workflows/main.yml -j ci
 ~~~
 
 ## CD
+
+> A venir...
 
 ## Guide (TP) : indications à suivre pour mettre en place le projet
 
@@ -186,4 +225,4 @@ Nous reprenons la démarche générale, proposée par [Leonard Richardson](https
 - [supertest](https://www.npmjs.com/package/supertest), tests au niveau de la couche http
 - [Husky](https://typicode.github.io/husky/), gestion explicite et partageable de hooks *pre-commit*
 - [eslint](https://eslint.org/), linter et analyse statique des sources js
-- [sonarjs](https://www.npmjs.com/package/eslint-plugin-sonarjs), plugin d'eslint pour la détection de *code smell*
+- [sonarjs](https://www.npmjs.com/package/eslint-plugin-sonarjs), plugin d'eslint pour la détection de *code smells*, suite de règles maintenue par SonarQube

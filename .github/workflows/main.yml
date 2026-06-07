@@ -9,8 +9,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout #Clone le dépot dans la vm runner de Github Actions
         uses: actions/checkout@v4
+
+      # -----------------------------
+      # Étape de Linting (Vérification du code)
+      # -----------------------------
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm" #
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint # S'arrêtera ici si ESLint trouve des erreurs (code retour != 0)
 
       # -----------------------------
       # Docker auth + buildx
@@ -25,104 +40,106 @@ jobs:
         uses: docker/setup-buildx-action@v4
 
       # -----------------------------
-      # Build image for tests (test internes, unitaires, stateless)
+      # Build image for tests (test internes : unitaires, stateless)
       # -----------------------------
       - name: Build test image
         uses: docker/build-push-action@v7
         with:
           target: test
-          load: true
+          load: true # Permet de charger l'image dans le démon Docker local
           tags: local/test:latest
 
-      #Linter local
+      # 2. On LANCE les tests. Si cette commande échoue, GitHub Actions s'arrête pile ici.
+      - name: Run tests (internes)
+        run: docker run --rm local/test:latest
 
-      # -----------------------------
-      # SonarCloud (analysis + gate)
-      # -----------------------------
-      - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@v6
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
-      # - name: Sonar Quality Gate (fail if red)
-      #   uses: SonarSource/sonarcloud-quality-gate-action@v1
-      #   timeout-minutes: 5
+      # # -----------------------------
+      # # SonarCloud (analysis + gate)
+      # # -----------------------------
+      # - name: SonarQube Scan
+      #   uses: SonarSource/sonarqube-scan-action@v6
       #   env:
-      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_BILLETTERIE }}
 
-      # -----------------------------
-      # Build final image
-      # -----------------------------
-      - name: Build final image (local)
-        uses: docker/build-push-action@v7
-        with:
-          target: final
-          load: true
-          tags: ${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:${{ github.sha }}
+      # # - name: Sonar Quality Gate (fail if red)
+      # #   uses: SonarSource/sonarcloud-quality-gate-action@v1
+      # #   timeout-minutes: 5
+      # #   env:
+      # #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_BILLETTERIE }}
 
-      # -----------------------------
-      # Test "externe" | image de prod (exemple simple, a remplacer par un runner dédié)
-      # -----------------------------
-      - name: Create network
-        run: docker network create ci-net
+      # # -----------------------------
+      # # Build final image
+      # # -----------------------------
+      # - name: Build final image (local)
+      #   uses: docker/build-push-action@v7
+      #   with:
+      #     target: final
+      #     load: true
+      #     tags: ${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:${{ github.sha }}
 
-      - name: Start DB
-        run: |
-          docker run -d --name db \
-          --network ci-net \
-          -e MARIADB_ROOT_PASSWORD=root \
-          -e MARIADB_DATABASE=testdb \
-          mariadb:11
+      # # -----------------------------
+      # # Test "externe" | image de prod (exemple simple, a remplacer par un runner dédié)
+      # # -----------------------------
+      # - name: Create network
+      #   run: docker network create ci-net
 
-      - name: Wait DB
-        run: |
-          until docker exec db mariadb-admin ping -proot --silent; do
-          sleep 1
-          done
+      # - name: Start DB
+      #   run: |
+      #     docker run -d --name db \
+      #     --network ci-net \
+      #     -e MARIADB_ROOT_PASSWORD=root \
+      #     -e MARIADB_DATABASE=testdb \
+      #     mariadb:11
 
-      - name: Inject password file (web app)
-        run: |
-          echo "root" > /tmp/pass
-          
-      - name: Run prod image
-        run: |
-          docker run -d --name app \
-          --network ci-net \
-          -e DB_HOST=db \
-          -e DB_NAME=testdb \
-          -e DB_USER=root \
-          -e PASSWORD_FILE_PATH=/tmp/pass \
-          -p 8080:80 \
-          ${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:${{ github.sha }}
+      # - name: Wait DB
+      #   run: |
+      #     until docker exec db mariadb-admin ping -proot --silent; do
+      #     sleep 1
+      #     done
 
-          docker cp /tmp/pass app:/tmp/pass
+      # - name: Inject password file (web app)
+      #   run: |
+      #     echo "root" > /tmp/pass
 
-      - name: Exemple test image de prod - HTTP smoke test
-        run: |
-          for i in {1..30}; do
-            curl -f http://localhost:8080/database.php | grep "message-" && exit 0
-            sleep 1
-            done
-          exit 1
-      # -----------------------------
-      # Docker Scout (fail on critical)
-      # -----------------------------
-      - name: Docker Scout CVE scan (gating)
-        uses: docker/scout-action@v1
-        with:
-          image: ${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:${{ github.sha }}
-          command: cves
-          only-severities: critical
-          exit-code: true
+      # - name: Run prod image
+      #   run: |
+      #     docker run -d --name app \
+      #     --network ci-net \
+      #     -e DB_HOST=db \
+      #     -e DB_NAME=testdb \
+      #     -e DB_USER=root \
+      #     -e PASSWORD_FILE_PATH=/tmp/pass \
+      #     -p 8080:80 \
+      #     ${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:${{ github.sha }}
 
-      # -----------------------------
-      # Push only if everything passed
-      # -----------------------------
-      - name: Push image
-        run: |
-          docker push ${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:${{ github.sha }}
-          docker tag \
-                     ${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:${{ github.sha }} \
-                     ${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:latest
-          docker push \
-                     ${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:latest
+      #     docker cp /tmp/pass app:/tmp/pass
+
+      # - name: Exemple test image de prod - HTTP smoke test
+      #   run: |
+      #     for i in {1..30}; do
+      #       curl -f http://localhost:8080/database.php | grep "message-" && exit 0
+      #       sleep 1
+      #       done
+      #     exit 1
+      # # -----------------------------
+      # # Docker Scout (fail on critical)
+      # # -----------------------------
+      # - name: Docker Scout CVE scan (gating)
+      #   uses: docker/scout-action@v1
+      #   with:
+      #     image: ${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:${{ github.sha }}
+      #     command: cves
+      #     only-severities: critical
+      #     exit-code: true
+
+      # # -----------------------------
+      # # Push only if everything passed
+      # # -----------------------------
+      # - name: Push image
+      #   run: |
+      #     docker push ${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:${{ github.sha }}
+      #     docker tag \
+      #                ${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:${{ github.sha }} \
+      #                ${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:latest
+      #     docker push \
+      #                ${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:latest

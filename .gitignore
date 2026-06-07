@@ -5,3 +5,5 @@ db
 .env.prod
 dist/
 sonar-*
+.secrets
+.vars

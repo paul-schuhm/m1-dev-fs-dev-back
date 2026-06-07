@@ -234,16 +234,24 @@ L'objectif est d'**interdire** l'intégration (rapatriement) de code **non confo
 
 ## Pipeline CI (avec GitHub Actions)
 
-[**Créez** un *workflow* Gihtub Actions](https://docs.github.com/fr/actions/how-tos/write-workflows) `.github/workflows/ci.yml` qui se déclenche à chaque **merge** sur la branche principale `main` (*Pull Request* ou *push*). La pipeline est composée des *actions* suivantes :
+[**Créez** un *workflow* Gihtub Actions](https://docs.github.com/fr/actions/how-tos/write-workflows) `.github/workflows/ci.yml` qui se déclenche à chaque **merge** sur la branche principale `main` (*Pull Request* ou *push*).
+
+La pipeline est composée des *actions* suivantes :
 
 1. **Validation du code** : formatage, analyse statique (eslint) et tests unitaires (tests *fonctionnels*, *stateless*)
 2. **Analyse statique** avec [SonarQube](https://www.sonarsource.com/products/sonarqube/cloud/). Pour cela, votre *action* aura besoin d'accès à l'API de SonarQube :
    1. **Créer** un compte gratuit sur SonarCloud
-   2. **Générer** un *access token*
-   3. [Renseigner l'access token SonarQub auprès de Github Actions](https://docs.github.com/fr/actions/how-tos/write-workflows/choose-what-workflows-do/use-secrets).
+   2. **Créer** un *access token* nommé `SONAR_TOKEN_BILLETTERIE`
+   3. Sur votre dépôt Github :
+      1. **Enregistrer** [un **secret** *Gihtub Actions*](https://docs.github.com/fr/actions/how-tos/write-workflows/choose-what-workflows-do/use-secrets)  `SONAR_TOKEN_BILLETTERIE` et y renseigner la valeur générée précédemment
+      2. **Enregistrer** les **variables** *Github Actions* suivantes :
+         1. `SONAR_PROJECT_KEY` et y renseigner la clé du projet SonarQube (*Project Key*, dans *About This Project* sur SonarCloud)
+         2. `SONAR_ORG` et y renseigner le nom de votre organisation sur SonarCloud (*Organization Key*, dans *About This Project* sur SonarCloud)
 3. **Build de l'image (prod)** : Construction de votre image Docker qui sera livrée en prod
-4. **Tests Externes** (*boîte noire*) : lancez l'image construite à l'étape 3 à côté d'un ou plusieurs conteneurs de test prévu à cet effet. Un autre conteneur (*runner*) requête l'API pour vérifier qu'elle répond correctement (code status, données, validation, format JSON valide, etc.). Instancier une base de données de test au besoin avec un jeu de données reproductible.
-5. Scan des **vulnérabilités** (dépendances) avec [Docker Scout](https://docs.docker.com/scout/)
+4. **Tests externes** (*boîte noire*) : lancez l'image construite à l'étape 3 à côté d'un ou plusieurs conteneurs de test prévu à cet effet. Un autre conteneur (*runner*) requête l'API pour vérifier qu'elle répond correctement (code status, données, validation, format JSON valide, etc.). Instancier une base de données de test au besoin avec un jeu de données reproductible.
+5. *Scan* des **vulnérabilités** (dépendances installées dans l'image) avec [Docker Scout](https://docs.docker.com/scout/). Pour cela, sur votre dépôt Github :
+   1. **Enregistrer** la **variable** *Github Actions* suivant : `DOCKER_USERNAME`, votre nom d'utilisateur sur Docker Hub
+   2. **Enregistrer** le **secret** *Github Actions* suivant : `DOCKERHUB_TOKEN`, *personal access token* généré sur votre compte Docker Hub avec les permissions **lecture/écriture**
 6. **Publication de l'image** : Si tout passe, **publiez l'image sur votre registre Docker Hub en la tagant automatiquement avec le SHA du commit Git**.
 
 ### Questions
