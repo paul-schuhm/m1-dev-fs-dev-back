@@ -1,0 +1,12 @@
+{
+  "name": "stateful",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "client.js",
+  "scripts": {
+    "test:stateful": "node --test client.js"
+  }
+}

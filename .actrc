@@ -1,6 +1,9 @@
---secret-file .secrets
---env GITHUB_REF=refs/heads/main
---env RUNNER_TOOL_CACHE=/tmp
---eventpath act-events.json
 --workflows .github/workflows/main.yml
+--secret-file .secrets
+--var-file .vars
+--eventpath act-events.json
+--env GITHUB_REF=refs/heads/main
+--env GITHUB_SHA=latest
+--env GITHUB_REPOSITORY=paul-schuhm/m1-dev-fs-dev-back
 --bind
+--reuse

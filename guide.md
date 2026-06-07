@@ -29,7 +29,7 @@
   - [Scripter la bascule](#scripter-la-bascule)
   - [Test du *zero-downtime*](#test-du-zero-downtime)
   - [Protocole de test à exécuter](#protocole-de-test-à-exécuter)
-  - [Checkpoint](#checkpoint-1)
+  - [Checkpoint test de charge](#checkpoint-test-de-charge)
   - [Questions (réfléchir)](#questions-réfléchir)
   - [*En cours de consolidation*](#en-cours-de-consolidation)
   - [Migration (*vanilla*, sans ORM)](#migration-vanilla-sans-orm)
@@ -239,7 +239,8 @@ L'objectif est d'**interdire** l'intégration (rapatriement) de code **non confo
 La pipeline est composée des *actions* suivantes :
 
 1. **Validation du code** : formatage, analyse statique (eslint) et tests unitaires (tests *fonctionnels*, *stateless*)
-2. **Analyse statique** avec [SonarQube](https://www.sonarsource.com/products/sonarqube/cloud/). Pour cela, votre *action* aura besoin d'accès à l'API de SonarQube :
+2. **Tests internes**
+3. **Analyse statique** avec [SonarQube](https://www.sonarsource.com/products/sonarqube/cloud/). Pour cela, votre *action* aura besoin d'accès à l'API de SonarQube :
    1. **Créer** un compte gratuit sur SonarCloud
    2. **Créer** un *access token* nommé `SONAR_TOKEN_BILLETTERIE`
    3. Sur votre dépôt Github :
@@ -247,12 +248,12 @@ La pipeline est composée des *actions* suivantes :
       2. **Enregistrer** les **variables** *Github Actions* suivantes :
          1. `SONAR_PROJECT_KEY` et y renseigner la clé du projet SonarQube (*Project Key*, dans *About This Project* sur SonarCloud)
          2. `SONAR_ORG` et y renseigner le nom de votre organisation sur SonarCloud (*Organization Key*, dans *About This Project* sur SonarCloud)
-3. **Build de l'image (prod)** : Construction de votre image Docker qui sera livrée en prod
-4. **Tests externes** (*boîte noire*) : lancez l'image construite à l'étape 3 à côté d'un ou plusieurs conteneurs de test prévu à cet effet. Un autre conteneur (*runner*) requête l'API pour vérifier qu'elle répond correctement (code status, données, validation, format JSON valide, etc.). Instancier une base de données de test au besoin avec un jeu de données reproductible.
-5. *Scan* des **vulnérabilités** (dépendances installées dans l'image) avec [Docker Scout](https://docs.docker.com/scout/). Pour cela, sur votre dépôt Github :
+4. **Build de l'image (prod)** : Construction de votre image Docker qui sera livrée en prod
+5. **Tests externes** (*boîte noire*) : lancez l'image construite à l'étape 3 à côté d'un ou plusieurs conteneurs de test prévu à cet effet. Un autre conteneur (*runner*) requête l'API pour vérifier qu'elle répond correctement (code status, données, validation, format JSON valide, etc.). Instancier une base de données de test au besoin avec un jeu de données reproductible.
+6. *Scan* des **vulnérabilités** (dépendances installées dans l'image) avec [Docker Scout](https://docs.docker.com/scout/). Pour cela, sur votre dépôt Github :
    1. **Enregistrer** la **variable** *Github Actions* suivant : `DOCKER_USERNAME`, votre nom d'utilisateur sur Docker Hub
    2. **Enregistrer** le **secret** *Github Actions* suivant : `DOCKERHUB_TOKEN`, *personal access token* généré sur votre compte Docker Hub avec les permissions **lecture/écriture**
-6. **Publication de l'image** : Si tout passe, **publiez l'image sur votre registre Docker Hub en la tagant automatiquement avec le SHA du commit Git**.
+7. **Publication de l'image** : Si tout passe, **publiez l'image sur votre registre Docker Hub en la tagant automatiquement avec le SHA du commit Git**.
 
 ### Questions
 
@@ -553,7 +554,7 @@ Suivre ces étapes pendant que votre test de charge tourne :
 7. Faites la bascule vers *Blue*, puis vers *Green* (*rollback*).
 8. **Nettoyer** *Blue* : une fois que le trafic est sur *Green* et qu'on a vérifié que tout fonctionne, on peut couper et supprimer les conteneurs *Blue* (port 3001) pour libérer les ressources.
 
-## Checkpoint
+## Checkpoint test de charge
 
 Après un test de charge, montrer les éléments suivants :
 

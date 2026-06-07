@@ -1,3 +1,7 @@
+DROP DATABASE IF EXISTS api;
+
+CREATE DATABASE api;
+
 -- Sélection de la base de données
 USE api;
 

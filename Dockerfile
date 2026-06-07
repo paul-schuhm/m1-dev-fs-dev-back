@@ -37,8 +37,8 @@ COPY package*.json ./
 
 # Install production dependencies
 RUN --mount=type=cache,target=/root/.npm,sharing=locked \
-     npm ci --omit=dev --ignore-scripts && \
-     npm cache clean --force
+    npm ci --omit=dev --ignore-scripts && \
+    npm cache clean --force
 
 # Set proper ownership
 RUN chown -R nodejs:nodejs /app
@@ -140,3 +140,13 @@ USER nodejs
 
 # Run tests with coverage
 CMD ["npm", "run", "test"]
+
+# ================================================
+# Test Stage 2 : Client test (execute la suite de tests "externes" (stateful, voir pipeline CI)
+# ================================================
+FROM node:26-alpine AS api-tests
+WORKDIR /tests
+COPY tests/stateful/package*.json ./
+RUN npm ci
+COPY tests/stateful/client.js ./tests
+CMD ["npm", "run", "test:api"]

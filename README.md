@@ -19,8 +19,7 @@
   - [Guide (TP) : indications à suivre pour mettre en place le projet](#guide-tp--indications-à-suivre-pour-mettre-en-place-le-projet)
   - [Cahier des charges (spécifications)](#cahier-des-charges-spécifications)
     - [Méthodologie employée pour concevoir et implémenter l'API REST"like"](#méthodologie-employée-pour-concevoir-et-implémenter-lapi-restlike)
-  - [À terminer](#à-terminer)
-  - [Améliorations à prévoir](#améliorations-à-prévoir)
+  - [Améliorations à prévoir et indications](#améliorations-à-prévoir-et-indications)
   - [Ressources utiles](#ressources-utiles)
     - [REST et conception d'API](#rest-et-conception-dapi)
     - [Schémas utilisés](#schémas-utilisés)
@@ -185,17 +184,14 @@ Nous reprenons la démarche générale, proposée par [Leonard Richardson](https
 8. **Envisager** la progression typique des évènements: qu'est-ce qui est censé se produire ? [Le flux de contrôle standard comme le protocole de publication Atom](https://www.ibm.com/docs/fr/integration-designer/8.5.5?topic=formats-atom-feed-format) peut aider.
 9. **Considérer** les cas d'erreurs: qu'est-ce qui peut mal se passer ? Que faire dans ce cas ?
 
-## À terminer
+## Améliorations à prévoir et indications
 
-- Finaliser la CI avec un *runner* dédié aux tests externes []
-
-## Améliorations à prévoir
-
-- Créer et utiliser un utilisateur `mysql` différent de `root` dédié à l'application ;
 - Améliorer et personnaliser les règles de l'analyse statique et fixer un niveau d'exigence adapté (via `eslint`) ;
 - Développer une série de tests *stateless* pertinente ;
 - Développer une série de tests *stateful* pertinente ;
 - Re-factoriser le workflow `ci` *Github Actions* en plusieurs *jobs* interdépendants
+- **Développer le service de billetterie !**
+- Créer et utiliser un utilisateur `mysql` différent de `root` dédié à l'application avec les bon niveau de permissions ;
 
 ## Ressources utiles
 
