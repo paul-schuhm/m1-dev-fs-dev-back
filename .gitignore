@@ -1,9 +1,10 @@
 node_modules
-db-data
 db
+dist/
+**/db-data/
 .env
 .env.prod
-dist/
 .secrets
 .vars
 .scannerwork
+password.txt

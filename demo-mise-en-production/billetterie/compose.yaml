@@ -1,52 +1,36 @@
-#Compose file base
-
 services:
   api:
+    image: billetterie:${APP_VERSION}
     build:
-      context: .
-      target: development
+      context: ../../
+      dockerfile: Dockerfile
+      target: production
     environment:
-      - NODE_ENV=${NODE_ENV}
+      - NODE_ENV=production
       - MYSQL_HOST=${MYSQL_HOST}
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - MYSQL_ROOT_PASSWORD_FILE=${MYSQL_ROOT_PASSWORD_FILE}   
+      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/mysql-root
+    restart: unless-stopped
     secrets:
       - mysql-root
-    depends_on:
-      db:
-        condition: service_healthy
-    links:
-      - "db:database"
+    deploy:
+      mode: replicated
+      replicas: 4
+      resources:
+        limits:
+          memory: '${MEMORY_LIMIT:-2G}'
+          cpus: '${CPU_LIMIT:-1.0}'
+        reservations:
+          memory: '${MEMORY_RESERVATION:-512M}'
+          cpus: '${CPU_RESERVATION:-0.5}'
     networks:
       - api-network
-  db:
-    image: mysql:9.6.0
-    restart: always
-    secrets:
-      - mysql-root
-    labels:
-      - "autoheal=true"    
-    environment:
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - MYSQL_ROOT_PASSWORD_FILE=${MYSQL_ROOT_PASSWORD_FILE}
-    volumes:
-      - ./init/:/docker-entrypoint-initdb.d/
-      - ./db-data:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-p$$(cat /run/secrets/${MYSQL_ROOT_PASSWORD_FILE})"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-    networks:
-      - api-network
-volumes:
-  db-data:
+
 secrets:
   mysql-root:
-    file: db/password.txt
+    file: ../password.txt
 
 networks:
   api-network:
-    name: api-network
-    driver: bridge
+    external: true

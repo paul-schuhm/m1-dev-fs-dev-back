@@ -1,0 +1,29 @@
+services:
+  db:
+    image: mysql:9.6.0
+    restart: always
+    secrets:
+      - mysql-root
+    labels:
+      - "autoheal=true"    
+    environment:
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/mysql-root
+    volumes:
+      - ./base-de-donnees/init/:/docker-entrypoint-initdb.d/
+      - /var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-p$$(cat /run/secrets/mysql-root)"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - api-network
+
+secrets:
+  mysql-root:
+    file: ../password.txt
+
+networks:
+  api-network:
+    external: true
