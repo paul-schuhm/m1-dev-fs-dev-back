@@ -38,7 +38,7 @@ async function all(req, res, next) {
     if ('offset' in req.query && paginateEnum.includes('offset')) {
         //offset : doit être un entier, positif ou nul
         const offset = Number.parseInt(req.query.offset, 10);
-        if (!isNaN(offset) && offset > -1) {
+        if (!Number.isNaN(offset) && offset > -1) {
             //Met a jour les paramètres par défaut.
             query.offset = Number.parseInt(req.query.offset);
         } else {
@@ -49,7 +49,7 @@ async function all(req, res, next) {
                 path: req.path,
                 source: 'Bad value for query parameter \'offset\'',
                 description: 'offset must be an integer, positive or nul',
-                timestamp: new Date().getTime(),
+                timestamp: new Date().now(),
             }, req.baseUrl);
             //Interrupt
             return next();
@@ -60,7 +60,7 @@ async function all(req, res, next) {
     if ('limit' in req.query && paginateEnum.includes('limit')) {
         //limit : doit être un entier positif
         const limit = Number.parseInt(req.query.limit, 10);
-        if (!isNaN(limit) && limit > 0 && limit <= pagination.LIMIT_MAX) {
+        if (!Number.isNaN(limit) && limit > 0 && limit <= pagination.LIMIT_MAX) {
             //Met a jour les paramètres par défaut.
             query.limit = Number.parseInt(req.query.limit);
         }

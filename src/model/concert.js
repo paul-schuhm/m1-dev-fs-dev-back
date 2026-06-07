@@ -10,20 +10,36 @@ class Concert {
 
 /**
  * Retourne un Concert dans un état valide.
- * @param {*}
- * @throws Si une donnée est invalide
- * @returns
+ * @param {Object} data
+ * @param {string|number} data.id
+ * @param {string} data.artist
+ * @param {Date|string} data.date
+ * @param {string} data.location
+ * @param {number} data.nb_seats
+ * @throws {Error} Si une donnée est manquante ou invalide
+ * @returns {Concert}
  */
 function createConcert({ id, artist, date, location, nb_seats }) {
-    //Validation sur les données
-    if (!(nb_seats > 0)) {
-        throw new Error('nb_seats must be greater than 0');
+    //Validation des données
+    if (!id || !artist || !location) {
+        throw new Error('Missing required fields: id, artist, and location are mandatory.');
     }
-    //Validation...
-    //Valider la date !
 
-    //L'objet est initialisé dans un état valide.
-    return new Concert(id, artist, date, location, nb_seats);
+    if (!Number.isInteger(nb_seats) || nb_seats <= 0) {
+        throw new Error('nb_seats must be a number greater than 0');
+    }
+
+    const parsedDate = new Date(date);
+    
+    if (isNaN(parsedDate.getTime())) {
+        throw new Error('The provided date is invalid.');
+    }
+
+    if (parsedDate < new Date()) {
+        throw new Error('The concert date must be in the future.');
+    }
+
+    return new Concert(id, artist, parsedDate, location, nb_seats);
 }
 
 module.exports = createConcert;

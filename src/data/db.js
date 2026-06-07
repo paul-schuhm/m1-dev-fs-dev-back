@@ -7,10 +7,11 @@ const path = require('path');
 const mysql = require('mysql2/promise');
 
 function readDatabaseUserPassword(secretFile) {
+
     try {
         const secretPath = path.join(secretFile);
         return fs.readFileSync(secretPath, 'utf8').trim();
-    } catch (_error) {
+    } catch{
         throw new Error('Impossible de se connecter à la base de données. Merci de ré-essayer plus tard.');
     }
 }
