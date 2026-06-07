@@ -124,7 +124,7 @@ jobs:
         run: |
           docker run --rm \
             --network ci-net \
-            -e API_URL=http://app:80 \
+            -e API_URL=localhost:80 \
             local/api-tests:latest
 
       # -----------------------------
