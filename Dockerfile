@@ -149,4 +149,4 @@ WORKDIR /tests
 COPY tests/stateful/package*.json ./
 RUN npm ci
 COPY tests/stateful/client.js ./tests
-CMD ["npm", "run", "test:api"]
+CMD ["npm", "run", "test:stateful"]
