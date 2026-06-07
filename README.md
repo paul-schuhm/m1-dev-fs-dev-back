@@ -98,7 +98,7 @@ docker build --target production --tag api .
 
 ### Accéder à la documentation OpenAPI
 
-En environnement de développement, la documentation OpenAPI interactive est servie sur l'URL `/doc`,
+En environnement de développement, [la documentation OpenAPI](https://spec.openapis.org/oas/v3.2.0.html) interactive est servie sur l'URL `/doc`,
 
 ### Re-générer la documentation
 
