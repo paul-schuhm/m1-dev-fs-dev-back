@@ -4,10 +4,10 @@ on:
   push:
     branches: [main]
 
+#A faire : job 'ci' à découper en plusieurs jobs inter-dépendants
 jobs:
   ci:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout #Clone le dépot dans la vm runner de Github Actions
         uses: actions/checkout@v4
