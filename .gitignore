@@ -4,3 +4,4 @@ db
 .env
 .env.prod
 dist/
+sonar-*

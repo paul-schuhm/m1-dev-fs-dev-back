@@ -11,8 +11,9 @@
   - [Accéder à la documentation OpenAPI](#accéder-à-la-documentation-openapi)
   - [Progression typique (*workflow*)](#progression-typique-workflow)
   - [CI](#ci)
+    - [Action : analyse statique avec sonarqube](#action--analyse-statique-avec-sonarqube)
   - [CD](#cd)
-  - [Guide](#guide)
+  - [Guide (TP) : indications à suivre pour mettre en place le projet](#guide-tp--indications-à-suivre-pour-mettre-en-place-le-projet)
   - [Cahier des charges (spécifications)](#cahier-des-charges-spécifications)
     - [Méthodologie employée pour concevoir et implémenter l'API REST"like"](#méthodologie-employée-pour-concevoir-et-implémenter-lapi-restlike)
   - [À terminer](#à-terminer)
@@ -31,7 +32,7 @@
 ### Pipeline CI
 
 - Disposer d'un compte sur Docker Inc (Docker Hub pour publier les images, Docker Scout pour le scan de vulnérabilités dans la *pipeline* CI);
-- Disposer d'un compte gratuit sur Sonarcloud (SonarQube pour analyse statique dans la *pipeline* CI);
+- Disposer d'un compte gratuit sur [Sonarcloud](https://sonarcloud.io) (SonarQube pour analyse statique dans la *pipeline* CI)
 
 ## Installer et lancer le projet
 
@@ -82,29 +83,39 @@ npm run gen-oad
 
 ## Accéder à la documentation OpenAPI
 
-La documentation OpenAPI est servie sur l'URL `/doc`, en environnement de dévelopement.
+La documentation OpenAPI est servie sur l'URL `/doc`, en environnement de développement.
 
 ## Progression typique (*workflow*)
 
 1. On [lance le projet en mode dev (*hot reload* via le mode *watch* de Compose)](#lancer-le-projet-env-de-dev)
 2. On développe (modifie sources)
 3. On *commit* sur une branche, déclenche hook *pre-commit* (qualité locale) :
-   1. Linter (avec eslint)
-   2. Analyse statique (avec eslint)
+   1. Formatage (avec eslint)
+   2. Analyse statique/Linting (avec eslint)
    3. Tests "internes" (avec jest)
 4. Si tout passe, le *commit est réalisé* en local
 5. Publie le commit sur le dépôt distant
-6. Déclenchement de la [*pipeline* CI](#ci)
+6. Déclenchement de la [*pipeline* CI](#ci) au merge sur `main`
 
 ## CI
 
-Pipeline CI avec *Github Actions*
+*Pipeline* d'intégration continue *CI* avec *Github Actions*
 
 <!-- Indiquer le contenu de la pipeline -->
 
+### Action : analyse statique avec sonarqube
+
+**Créer** un fichier `sonar-project.properties` à la racine du dépôt avec les données sur votre projet SonarCloud :
+
+~~~bash
+sonar.organization=
+sonar.projectKey=
+sonar.sources=
+~~~
+
 ## CD
 
-## Guide
+## Guide (TP) : indications à suivre pour mettre en place le projet
 
 [Accéder au guide de développement, intégration et déploiement du service.](./guide.md)
 
@@ -132,7 +143,6 @@ Nous reprenons la démarche générale, proposée par [Leonard Richardson](https
 ## À terminer
 
 - Finaliser la CI avec un *runner* dédié aux tests externes []
-- Intégrer la base de données MySQL au système []
 
 ## Améliorations à prévoir
 

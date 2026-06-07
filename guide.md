@@ -5,7 +5,7 @@
   - [Partie 2 : Choix technologique, mise en place d'un projet conteneurisé, tests, tooling de qualité du code](#partie-2--choix-technologique-mise-en-place-dun-projet-conteneurisé-tests-tooling-de-qualité-du-code)
   - [Conteneurisation](#conteneurisation)
   - [Dockerfile Optimisé (multi-stage)](#dockerfile-optimisé-multi-stage)
-  - [Checkpoint](#checkpoint)
+  - [Checkpoint conteneurisation et préparation des environnements](#checkpoint-conteneurisation-et-préparation-des-environnements)
   - [Gestion des environnements](#gestion-des-environnements)
   - [Environnement de développement](#environnement-de-développement)
   - [Environnement de production](#environnement-de-production)
@@ -15,12 +15,13 @@
   - [Rotation du secret](#rotation-du-secret)
   - [Rotation auto avec un cronjob](#rotation-auto-avec-un-cronjob)
     - [Remarque sur la rotation, précautions](#remarque-sur-la-rotation-précautions)
-  - [Checkpoint](#checkpoint-1)
+  - [Checkpoint](#checkpoint)
   - [Intégration continue (CI)](#intégration-continue-ci)
   - [Mettre en place un dépôt](#mettre-en-place-un-dépôt)
-  - [Pré-commit (qualité "locale", feedback rapide)](#pré-commit-qualité-locale-feedback-rapide)
+  - [Pré-commit (qualité "locale", *feedback* rapide)](#pré-commit-qualité-locale-feedback-rapide)
   - [Pipeline CI (avec GitHub Actions)](#pipeline-ci-avec-github-actions)
-  - [Checkpoint](#checkpoint-2)
+    - [Questions](#questions)
+  - [Checkpoint Intégration continue](#checkpoint-intégration-continue)
   - [Déploiement continu et stratégies de mise en production (CD)](#déploiement-continu-et-stratégies-de-mise-en-production-cd)
   - [Déploiement *Blue-Green*](#déploiement-blue-green)
   - [Scénario (sans *breaking change* au niveau du schéma)](#scénario-sans-breaking-change-au-niveau-du-schéma)
@@ -28,11 +29,11 @@
   - [Scripter la bascule](#scripter-la-bascule)
   - [Test du *zero-downtime*](#test-du-zero-downtime)
   - [Protocole de test à exécuter](#protocole-de-test-à-exécuter)
-  - [Checkpoint](#checkpoint-3)
+  - [Checkpoint](#checkpoint-1)
   - [Questions (réfléchir)](#questions-réfléchir)
-  - [En cours de consolidation](#en-cours-de-consolidation)
+  - [*En cours de consolidation*](#en-cours-de-consolidation)
   - [Migration (*vanilla*, sans ORM)](#migration-vanilla-sans-orm)
-  - [Checkpoint](#checkpoint-4)
+  - [Checkpoint stratégie de migration](#checkpoint-stratégie-de-migration)
   - [Intégration d'un ORM pour les migrations](#intégration-dun-orm-pour-les-migrations)
   - [Mise en cache avec Redis](#mise-en-cache-avec-redis)
 
@@ -63,11 +64,11 @@
 
 > Pourquoi utilise-t-on le multi-staging en production plutôt qu'un simple `FROM node:latest` ? Quel est l'impact sur la *sécurité* et la *taille* de l'image ?
 
-## Checkpoint
+## Checkpoint conteneurisation et préparation des environnements
 
 > À valider ensemble
 
-- Présenter votre Dockerfile et la taille de l'image finale à destination de la production générée
+- Présenter votre `Dockerfile` et la taille de l'image finale à destination de la production générée
 - Présenter l'environnement `developement`;
 
 ## Gestion des environnements
@@ -224,7 +225,7 @@ L'objectif est d'**interdire** l'intégration (rapatriement) de code **non confo
 - **Faire** un clone du dépôt sur votre machine
 - **Rédiger** un `README` donnant les instructions pour lancer votre projet en environnement de dev et la procédure pour contribuer au projet (gitflow). Ce document doit aider à l'*onboarding* sur le projet
 
-## Pré-commit (qualité "locale", feedback rapide)
+## Pré-commit (qualité "locale", *feedback* rapide)
 
 **Configurez** un outil de *git hook* local [avec husky](https://typicode.github.io/husky/), pour exécuter localement, **avant chaque commit** :
 
@@ -233,22 +234,31 @@ L'objectif est d'**interdire** l'intégration (rapatriement) de code **non confo
 
 ## Pipeline CI (avec GitHub Actions)
 
-[**Créez** un *workflow* Gihtub Actions](https://docs.github.com/fr/actions/how-tos/write-workflows) `.github/workflows/ci.yml` qui se déclenche à chaque **merge** sur la branche principale `main` (*Pull Request* ou *push*) :
+[**Créez** un *workflow* Gihtub Actions](https://docs.github.com/fr/actions/how-tos/write-workflows) `.github/workflows/ci.yml` qui se déclenche à chaque **merge** sur la branche principale `main` (*Pull Request* ou *push*). La pipeline est composée des *actions* suivantes :
 
-1. **Lint et Test** : validation du code et tests unitaires.
-2. Analyse statique [SonarCloud](https://www.sonarsource.com/products/sonarqube/cloud/)
-3. **Build Image** : Construction de votre image Docker.
+1. **Validation du code** : formatage, analyse statique (eslint) et tests unitaires (tests *fonctionnels*, *stateless*)
+2. **Analyse statique** avec [SonarQube](https://www.sonarsource.com/products/sonarqube/cloud/). Pour cela, votre *action* aura besoin d'accès à l'API de SonarQube :
+   1. **Créer** un compte gratuit sur SonarCloud
+   2. **Générer** un *access token*
+   3. [Renseigner l'access token SonarQub auprès de Github Actions](https://docs.github.com/fr/actions/how-tos/write-workflows/choose-what-workflows-do/use-secrets).
+3. **Build de l'image (prod)** : Construction de votre image Docker qui sera livrée en prod
 4. **Tests Externes** (*boîte noire*) : lancez l'image construite à l'étape 3 à côté d'un ou plusieurs conteneurs de test prévu à cet effet. Un autre conteneur (*runner*) requête l'API pour vérifier qu'elle répond correctement (code status, données, validation, format JSON valide, etc.). Instancier une base de données de test au besoin avec un jeu de données reproductible.
 5. Scan des **vulnérabilités** (dépendances) avec [Docker Scout](https://docs.docker.com/scout/)
+6. **Publication de l'image** : Si tout passe, **publiez l'image sur votre registre Docker Hub en la tagant automatiquement avec le SHA du commit Git**.
 
-**Publication** : Si tout passe, **publiez l'image sur votre registre Docker Hub en la taggant automatiquement avec le SHA du commit Git**.
+### Questions
 
-> Quelle est la différence fondamentale entre un test unitaire et le "test externe" demandé dans la CI ? Pourquoi le test boîte noire est-il indispensable avant de *push* sur Docker Hub ?
+1. Quelle est la différence fondamentale entre un test unitaire *stateless* et le "test externe" demandé dans la CI ?
+2. Pourquoi le test externe (étape 4) est-il *fortement recommandé* (indispensable?) avant de publier l'image sur votre registre ?
+3. Peut-on tester la *pipeline* *sans* l'exécuter sur Github Actions pour vérifier qu'elle est bien configurée ?
 
-## Checkpoint
+## Checkpoint Intégration continue
 
 - Tentez de faire un commit avec une erreur de syntaxe ou un test qui échoue. Que se passe-t-il ?
-- Montrez l'historique d'une exécution réussie sur GitHub Actions.
+- Montrez l'historique de la pipeline réussie sur GitHub Actions
+- Montrez l'image publiée et le rapport effectué par Docker scout
+
+Le livrable (*image* du service web) est prêt pour être déployé en production !
 
 ## Déploiement continu et stratégies de mise en production (CD)
 
@@ -258,8 +268,8 @@ Nous allons simuler une mise en production de niveau critique, où l'application
 
 ## Déploiement *Blue-Green*
 
-- DB **unique** partagée
-- **La base migrée doit supporter l'ancienne (blue) et la nouvelle (green) version de l'application.** (backward compatible)
+- Base de données **unique** partagée
+- **La base migrée doit supporter l'ancienne (*Blue*) et la nouvelle (*Green*) version de l'application.** (backward compatible)
 
 ```text
 BLUE APP ─┐
@@ -548,7 +558,7 @@ Après un test de charge, montrer les éléments suivants :
 2. Dans un scénario réel où la Version *Green* apporte une modification du schéma de base de données, pourquoi le fait de simplement basculer Nginx comme on vient de le faire casserait-il l'application des utilisateurs, même si Nginx ne renvoie aucune erreur 502 ?
 3. Comment l'utilisation combinée [du pattern **Expand/Contract** ou parallel change](https://martinfowler.com/bliki/ParallelChange.html) au niveau de la base de données permet-elle de résoudre le problème de la Question 2 lors d'une bascule Blue/Green ?
 
-## En cours de consolidation
+## *En cours de consolidation*
 
 ## Migration (*vanilla*, sans ORM)
 
@@ -556,9 +566,9 @@ Après un test de charge, montrer les éléments suivants :
 
 > Comment votre script sait-il quelles migrations ont déjà été appliquées afin d'éviter de ré-exécuter deux fois le même script SQL ? Quelle structure de table devez-vous créer pour gérer cela ? Quelle est la limite de cette approche ? Que doit permettre **un bon outil de migration** de base de données ?
 
-## Checkpoint
+## Checkpoint stratégie de migration
 
-- Expliquer votre stratégie de migration
+- **Expliquer** votre stratégie de migration
 
 <!-- 
 Limite: pas de down (revert)
