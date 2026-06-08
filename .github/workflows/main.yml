@@ -69,9 +69,9 @@ jobs:
       # #   env:
       # #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-      -----------------------------
-      Build final image
-      -----------------------------
+      # -----------------------------
+      # Build final image
+      # -----------------------------
       - name: Build final image (local)
         uses: docker/build-push-action@v7
         with:
