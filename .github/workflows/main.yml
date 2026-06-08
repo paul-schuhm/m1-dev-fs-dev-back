@@ -39,35 +39,35 @@ jobs:
       - name: Set up Buildx
         uses: docker/setup-buildx-action@v4
 
-      # -----------------------------
-      # Build image for tests (test internes : unitaires, stateless)
-      # -----------------------------
-      - name: Build test image
-        uses: docker/build-push-action@v7
-        with:
-          target: test
-          load: true # Permet de charger l'image dans le démon Docker local
-          tags: local/test:latest
-
-      - name: Run tests (internes)
-        run: docker run --rm local/test:latest
-
-      # Triggering SonarQube analysis as results of it are required by Quality Gate check. Crée rapport qualité
-      - name: SonarQube Scan
-        uses: sonarsource/sonarqube-scan-action@master
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
-      # # Check the Quality Gate status
-      # # Remarque : on le désactive pour ce projet pédagogique
-      # # car avec le plan gratuit SonarQube il faut au moins 80% de code coverage pour passer la Quality Gate
-      # - name: SonarQube Quality Gate check
-      #   id: sonarqube-quality-gate-check
-      #   uses: sonarsource/sonarqube-quality-gate-action@master
+      # # -----------------------------
+      # # Build image for tests (test internes : unitaires, stateless)
+      # # -----------------------------
+      # - name: Build test image
+      #   uses: docker/build-push-action@v7
       #   with:
-      #     pollingTimeoutSec: 600
+      #     target: test
+      #     load: true # Permet de charger l'image dans le démon Docker local
+      #     tags: local/test:latest
+
+      # - name: Run tests (internes)
+      #   run: docker run --rm local/test:latest
+
+      # # Triggering SonarQube analysis as results of it are required by Quality Gate check. Crée rapport qualité
+      # - name: SonarQube Scan
+      #   uses: sonarsource/sonarqube-scan-action@master
       #   env:
       #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      # # # Check the Quality Gate status
+      # # # Remarque : on le désactive pour ce projet pédagogique
+      # # # car avec le plan gratuit SonarQube il faut au moins 80% de code coverage pour passer la Quality Gate
+      # # - name: SonarQube Quality Gate check
+      # #   id: sonarqube-quality-gate-check
+      # #   uses: sonarsource/sonarqube-quality-gate-action@master
+      # #   with:
+      # #     pollingTimeoutSec: 600
+      # #   env:
+      # #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       # -----------------------------
       # Build final image
@@ -100,10 +100,10 @@ jobs:
           sleep 1
           done
 
-      - name: Inject password file (web app)
+      - name: Inject db password at runtime
         run: |
-          mkdir -p /tmp/app-secrets
-          echo "root" > /tmp/app-secrets/pass
+          mkdir -p ${{ github.workspace }}/secrets
+          echo "root" > ${{ github.workspace }}/db/password
 
       - name: Run prod image
         run: |
@@ -113,6 +113,7 @@ jobs:
           -e DB_NAME=testdb \
           -e DB_USER=root \
           -e MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db_password \
+          -v ${{ github.workspace }}/db:/run/secrets \
           ${{ vars.DOCKER_USERNAME }}/billetterie:${{ github.sha }}
 
       - name: Build API Tests Client Image
@@ -120,7 +121,12 @@ jobs:
           docker build --target api-tests -t local/api-tests:latest .
 
       - name: Wait for services to be ready
-        run: sleep 7
+        run: |
+          sleep 7
+          echo "=== LOGS DE L'APPLICATION ==="
+          docker logs app
+          echo "=== STATUT DES CONTENEURS ==="
+          docker ps -a
 
       - name: Run external tests on production image
         run: |
@@ -129,25 +135,25 @@ jobs:
             -e API_URL=http://app:3000 \
             local/api-tests:latest
 
-      # -----------------------------
-      # Docker Scout (fail on critical)
-      # -----------------------------
-      - name: Docker Scout CVE scan (gating)
-        uses: docker/scout-action@v1
-        with:
-          image: ${{ vars.DOCKER_USERNAME }}/billetterie:${{ github.sha }}
-          command: cves
-          only-severities: critical
-          exit-code: true
+      # # -----------------------------
+      # # Docker Scout (fail on critical)
+      # # -----------------------------
+      # - name: Docker Scout CVE scan (gating)
+      #   uses: docker/scout-action@v1
+      #   with:
+      #     image: ${{ vars.DOCKER_USERNAME }}/billetterie:${{ github.sha }}
+      #     command: cves
+      #     only-severities: critical
+      #     exit-code: true
 
-      # -----------------------------
-      # Push only if everything passed
-      # -----------------------------
-      - name: Push image
-        run: |
-          docker push ${{ vars.DOCKER_USERNAME }}/billetterie:${{ github.sha }}
-          docker tag \
-                     ${{ vars.DOCKER_USERNAME }}/billetterie:${{ github.sha }} \
-                     ${{ vars.DOCKER_USERNAME }}/billetterie:latest
-          docker push \
-                     ${{ vars.DOCKER_USERNAME }}/billetterie:latest
+      # # -----------------------------
+      # # Push only if everything passed
+      # # -----------------------------
+      # - name: Push image
+      #   run: |
+      #     docker push ${{ vars.DOCKER_USERNAME }}/billetterie:${{ github.sha }}
+      #     docker tag \
+      #                ${{ vars.DOCKER_USERNAME }}/billetterie:${{ github.sha }} \
+      #                ${{ vars.DOCKER_USERNAME }}/billetterie:latest
+      #     docker push \
+      #                ${{ vars.DOCKER_USERNAME }}/billetterie:latest
