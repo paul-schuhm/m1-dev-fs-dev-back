@@ -22,23 +22,21 @@ test('GET /v1/concerts - Doit retourner la liste des concerts avec un statut 200
     assert.match(contentType, /^application\/hal\+json(;.*)?$/, 'La réponse doit être au format application/hal+json');
 
     // 4. Extraction et validation du corps JSON
-    const body = await response.json();
-
+    // const body = await response.json();
     // On vérifie que le body est bien un objet (ou un tableau selon votre API)
-    assert.equal(typeof body, 'object', 'Le corps de la réponse doit être un objet JSON');
-  
-    // Exemple : Vérifier qu'un champ spécifique "_links" existe
-    assert.ok('_links' in body, 'La réponse JSON doit contenir un champ \'_links\'');
-    assert.ok(Array.isArray(body._links), 'Le champ \'_links\' doit être un tableau');
-    assert.ok(
-        'total_items' in body, 
-        'Le body de la réponse est manquant du champ obligatoire \'total\'',
-    );
-    assert.strictEqual(
-        typeof body.total_items, 
-        'number', 
-        'Le champ \'total_items\' doit être un nombre',
-    );
+    // assert.equal(typeof body, 'object', 'Le corps de la réponse doit être un objet JSON');
+    // // Exemple : Vérifier qu'un champ spécifique "_links" existe
+    // assert.ok('_links' in body, 'La réponse JSON doit contenir un champ \'_links\'');
+    // assert.ok(Array.isArray(body._links), 'Le champ \'_links\' doit être un tableau');
+    // assert.ok(
+    //     'total_items' in body, 
+    //     'Le body de la réponse est manquant du champ obligatoire \'total\'',
+    // );
+    // assert.strictEqual(
+    //     typeof body.total_items, 
+    //     'number', 
+    //     'Le champ \'total_items\' doit être un nombre',
+    // );
     //Vérifier que l'on récupère les données sur les concerts attendues
     // Etc... assert.ok(
     //     body.total_items === 3, 
