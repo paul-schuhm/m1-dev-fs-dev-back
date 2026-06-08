@@ -119,6 +119,9 @@ jobs:
         run: |
           docker build --target api-tests -t local/api-tests:latest .
 
+      - name: Wait for services to be ready
+        run: sleep 7
+
       - name: Run external tests on production image
         run: |
           docker run --rm \
