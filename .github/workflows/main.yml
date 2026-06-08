@@ -103,7 +103,7 @@ jobs:
       - name: Inject db password at runtime
         run: |
           mkdir -p ${{ github.workspace }}/db
-          echo "root" > ${{ github.workspace }}/db/password
+          echo "root" > ${{ github.workspace }}/db/db_password
 
       - name: Run prod image
         run: |
