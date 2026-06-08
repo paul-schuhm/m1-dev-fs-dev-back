@@ -113,7 +113,6 @@ jobs:
           -e DB_NAME=testdb \
           -e DB_USER=root \
           -e MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db_password \
-          -p 8080:80 \
           ${{ vars.DOCKER_USERNAME }}/billetterie:${{ github.sha }}
 
       - name: Build API Tests Client Image
@@ -124,7 +123,7 @@ jobs:
         run: |
           docker run --rm \
             --network ci-net \
-            -e API_URL=http://localhost:8080 \
+            -e API_URL=http://app:80 \
             local/api-tests:latest
 
       # -----------------------------
