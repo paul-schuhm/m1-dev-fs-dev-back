@@ -52,11 +52,11 @@ jobs:
       # - name: Run tests (internes)
       #   run: docker run --rm local/test:latest
 
-      # # Triggering SonarQube analysis as results of it are required by Quality Gate check. Crée rapport qualité
-      # - name: SonarQube Scan
-      #   uses: sonarsource/sonarqube-scan-action@master
-      #   env:
-      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      # Triggering SonarQube analysis as results of it are required by Quality Gate check. Crée rapport qualité
+      - name: SonarQube Scan
+        uses: sonarsource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       # # # Check the Quality Gate status
       # # # Remarque : on le désactive pour ce projet pédagogique
@@ -69,9 +69,9 @@ jobs:
       # #   env:
       # #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-      # -----------------------------
-      # Build final image
-      # -----------------------------
+      -----------------------------
+      Build final image
+      -----------------------------
       - name: Build final image (local)
         uses: docker/build-push-action@v7
         with:
@@ -79,81 +79,81 @@ jobs:
           load: true
           tags: ${{ vars.DOCKER_USERNAME }}/billetterie:${{ github.sha }} #nom image
 
-      # -----------------------------
-      # Test "externe" | image de prod (exemple simple, a remplacer par un runner dédié)
-      # -----------------------------
-      - name: Create network
-        run: docker network create ci-net
-
-      - name: Start DB
-        run: |
-          docker run -d --name db \
-          --network ci-net \
-          -e MARIADB_ROOT_PASSWORD=root \
-          -e MARIADB_DATABASE=testdb \
-          -v ${{ github.workspace }}/init/schema.sql:/docker-entrypoint-initdb.d/01_init.sql \
-          mariadb:11
-
-      - name: Wait DB
-        run: |
-          until docker exec db mariadb-admin ping -proot --silent; do
-          sleep 1
-          done
-
-      - name: Inject db password at runtime
-        run: |
-          mkdir -p ${{ github.workspace }}/db
-          echo "root" > ${{ github.workspace }}/db/password
-
-      - name: Run prod image
-        run: |
-          docker run -d --name app \
-          --network ci-net \
-          -e DB_HOST=db \
-          -e DB_NAME=testdb \
-          -e DB_USER=root \
-          -e MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db_password \
-          -v ${{ github.workspace }}/db:/run/secrets \
-          ${{ vars.DOCKER_USERNAME }}/billetterie:${{ github.sha }}
-
-      - name: Build API Tests Client Image
-        run: |
-          docker build --target api-tests -t local/api-tests:latest .
-
-      - name: Wait for services to be ready
-        run: |
-          sleep 7
-          echo "=== LOGS DE L'APPLICATION ==="
-          docker logs app
-          echo "=== STATUT DES CONTENEURS ==="
-          docker ps -a
-
-      - name: Run external tests on production image
-        run: |
-          docker run --rm \
-            --network ci-net \
-            -e API_URL=http://app:3000 \
-            local/api-tests:latest
-
       # # -----------------------------
-      # # Docker Scout (fail on critical)
+      # # Test "externe" | image de prod (exemple simple, a remplacer par un runner dédié)
       # # -----------------------------
-      # - name: Docker Scout CVE scan (gating)
-      #   uses: docker/scout-action@v1
-      #   with:
-      #     image: ${{ vars.DOCKER_USERNAME }}/billetterie:${{ github.sha }}
-      #     command: cves
-      #     only-severities: critical
-      #     exit-code: true
+      # - name: Create network
+      #   run: docker network create ci-net
 
-      # # -----------------------------
-      # # Push only if everything passed
-      # # -----------------------------
-      # - name: Push image
+      # - name: Start DB
       #   run: |
-      #     docker push ${{ vars.DOCKER_USERNAME }}/billetterie:${{ github.sha }}
-      #     docker tag \
-      #                ${{ vars.DOCKER_USERNAME }}/billetterie:${{ github.sha }} \
-      #                ${{ vars.DOCKER_USERNAME }}/billetterie:latest
-      #     docker push \
-      #                ${{ vars.DOCKER_USERNAME }}/billetterie:latest
+      #     docker run -d --name db \
+      #     --network ci-net \
+      #     -e MARIADB_ROOT_PASSWORD=root \
+      #     -e MARIADB_DATABASE=testdb \
+      #     -v ${{ github.workspace }}/init/schema.sql:/docker-entrypoint-initdb.d/01_init.sql \
+      #     mariadb:11
+
+      # - name: Wait DB
+      #   run: |
+      #     until docker exec db mariadb-admin ping -proot --silent; do
+      #     sleep 1
+      #     done
+
+      # - name: Inject db password at runtime
+      #   run: |
+      #     mkdir -p ${{ github.workspace }}/db
+      #     echo "root" > ${{ github.workspace }}/db/password
+
+      # - name: Run prod image
+      #   run: |
+      #     docker run -d --name app \
+      #     --network ci-net \
+      #     -e DB_HOST=db \
+      #     -e DB_NAME=testdb \
+      #     -e DB_USER=root \
+      #     -e MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db_password \
+      #     -v ${{ github.workspace }}/db:/run/secrets \
+      #     ${{ vars.DOCKER_USERNAME }}/billetterie:${{ github.sha }}
+
+      # - name: Build API Tests Client Image
+      #   run: |
+      #     docker build --target api-tests -t local/api-tests:latest .
+
+      # - name: Wait for services to be ready
+      #   run: |
+      #     sleep 7
+      #     echo "=== LOGS DE L'APPLICATION ==="
+      #     docker logs app
+      #     echo "=== STATUT DES CONTENEURS ==="
+      #     docker ps -a
+
+      # - name: Run external tests on production image
+      #   run: |
+      #     docker run --rm \
+      #       --network ci-net \
+      #       -e API_URL=http://app:3000 \
+      #       local/api-tests:latest
+
+      # -----------------------------
+      # Docker Scout (fail on critical)
+      # -----------------------------
+      - name: Docker Scout CVE scan (gating)
+        uses: docker/scout-action@v1
+        with:
+          image: ${{ vars.DOCKER_USERNAME }}/billetterie:${{ github.sha }}
+          command: cves
+          only-severities: critical
+          exit-code: true
+
+      # -----------------------------
+      # Push only if everything passed
+      # -----------------------------
+      - name: Push image
+        run: |
+          docker push ${{ vars.DOCKER_USERNAME }}/billetterie:${{ github.sha }}
+          docker tag \
+                     ${{ vars.DOCKER_USERNAME }}/billetterie:${{ github.sha }} \
+                     ${{ vars.DOCKER_USERNAME }}/billetterie:latest
+          docker push \
+                     ${{ vars.DOCKER_USERNAME }}/billetterie:latest
