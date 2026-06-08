@@ -72,12 +72,12 @@ jobs:
       # -----------------------------
       # Build final image
       # -----------------------------
-      # - name: Build final image (local)
-      #   uses: docker/build-push-action@v7
-      #   with:
-      #     target: production
-      #     load: true
-      #     tags: ${{ vars.DOCKER_USERNAME }}/billetterie:${{ github.sha }} #nom image
+      - name: Build final image (local)
+        uses: docker/build-push-action@v7
+        with:
+          target: production
+          load: true
+          tags: ${{ vars.DOCKER_USERNAME }}/billetterie:${{ github.sha }} #nom image
 
       # # -----------------------------
       # # Test "externe" | image de prod (exemple simple, a remplacer par un runner dédié)
