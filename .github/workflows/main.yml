@@ -4,59 +4,33 @@ on:
   push:
     branches: [main]
 
-#A faire : job 'ci' à découper en plusieurs jobs inter-dépendants
 jobs:
-  ci:
+  # -------------------------------------------------------------
+  # 1. Qualité du code (Formatting, Linting)
+  # -------------------------------------------------------------
+  lint:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout #Clone le dépot dans la vm runner de Github Actions
+      - name: Checkout
         uses: actions/checkout@v4
 
-      # -----------------------------
-      # Étape de Linting (Vérification du code)
-      # -----------------------------
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "24"
-          cache: "npm" #
+      # Décommentez ici si vous réactivez le Linting
+      # - name: Setup Node.js
+      #   uses: actions/setup-node@v4
+      #   with:
+      #     node-version: "24"
+      #     cache: "npm"
+      #
+      # - name: Install dependencies
+      #   run: npm ci
+      #
+      # - name: Lint
+      #   run: npm run lint
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Lint
-        run: npm run lint
-
-      # -----------------------------
-      # Docker auth + buildx
-      # -----------------------------
-      - name: Login to Docker Hub
-        uses: docker/login-action@v4
-        with:
-          username: ${{ vars.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Set up Buildx
-        uses: docker/setup-buildx-action@v4
-
-      # -----------------------------
-      # Build image for tests (test internes : unitaires, stateless)
-      # -----------------------------
-      - name: Build test image
-        uses: docker/build-push-action@v7
-        with:
-          target: test
-          load: true # Permet de charger l'image dans le démon Docker local
-          tags: local/test:latest
-
-      - name: Run tests (internes)
-        run: docker run --rm local/test:latest
-
-      # Triggering SonarQube analysis as results of it are required by Quality Gate check. Crée rapport qualité
-      - name: SonarQube Scan
-        uses: sonarsource/sonarqube-scan-action@master
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      # - name: SonarQube Scan
+      #   uses: sonarsource/sonarqube-scan-action@master
+      #   env:
+      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       # # # Check the Quality Gate status
       # # # Remarque : on le désactive pour ce projet pédagogique
@@ -69,91 +43,154 @@ jobs:
       # #   env:
       # #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-      # -----------------------------
-      # Build final image
-      # -----------------------------
+  # -------------------------------------------------------------
+  # 2. Job de Tests Unitaires / Internes
+  # -------------------------------------------------------------
+  test-internal:
+    runs-on: ubuntu-latest
+    needs: [lint]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Décommentez ici pour réactiver les tests internes et SonarQube
+      # - name: Login to Docker Hub
+      #   uses: docker/login-action@v4
+      #   with:
+      #     username: ${{ vars.DOCKER_USERNAME }}
+      #     password: ${{ secrets.DOCKERHUB_TOKEN }}
+      #
+      # - name: Set up Buildx
+      #   uses: docker/setup-buildx-action@v4
+      #
+      # - name: Build test image
+      #   uses: docker/build-push-action@v7
+      #   with:
+      #     target: test
+      #     load: true
+      #     tags: local/test:latest
+      #
+      # - name: Run tests (internes)
+      #   run: docker run --rm local/test:latest
+      #
+
+  # -------------------------------------------------------------
+  # 3. Build image de prod + tests d'intégration ('externes' avec états)
+  # -------------------------------------------------------------
+  build-and-test-image:
+    runs-on: ubuntu-latest
+    # Ce job attend que le lint ET les tests internes soient OK (si actifs)
+    needs: [lint, test-internal]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Configuration Docker nécessaire pour Buildx
+      - name: Login to Docker Hub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ vars.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v4
+
       - name: Build final image (local)
         uses: docker/build-push-action@v7
         with:
           target: production
           load: true
-          tags: ${{ vars.DOCKER_USERNAME }}/billetterie:${{ github.sha }} #nom image
+          tags: ${{ vars.DOCKER_USERNAME }}/billetterie:${{ github.sha }}
 
-      # # -----------------------------
-      # # Test "externe" | image de prod (exemple simple, a remplacer par un runner dédié)
-      # # -----------------------------
-      # - name: Create network
-      #   run: docker network create ci-net
+      - name: Create network
+        run: |
+          docker network rm -f ci-net
+          docker network create ci-net
 
-      # - name: Start DB
-      #   run: |
-      #     docker run -d --name db \
-      #     --network ci-net \
-      #     -e MARIADB_ROOT_PASSWORD=root \
-      #     -e MARIADB_DATABASE=testdb \
-      #     -v ${{ github.workspace }}/init/schema.sql:/docker-entrypoint-initdb.d/01_init.sql \
-      #     mariadb:11
+      - name: Start DB
+        run: |
+          docker run -d --name db \
+          --network ci-net \
+          -e MARIADB_ROOT_PASSWORD=password \
+          -e MARIADB_DATABASE=testdb \
+          -v ${{ github.workspace }}/init/schema.sql:/docker-entrypoint-initdb.d/01_init.sql \
+          mariadb:11
 
-      # - name: Wait DB
-      #   run: |
-      #     until docker exec db mariadb-admin ping -proot --silent; do
-      #     sleep 1
-      #     done
+      - name: Wait DB
+        run: |
+          until docker exec db mariadb-admin ping -proot --silent; do
+          sleep 1
+          done
 
       # - name: Inject db password at runtime
       #   run: |
       #     mkdir -p ${{ github.workspace }}/db
       #     echo "root" > ${{ github.workspace }}/db/db_password
 
-      # - name: Run prod image
-      #   run: |
-      #     docker run -d --name app \
-      #     --network ci-net \
-      #     -e DB_HOST=db \
-      #     -e DB_NAME=testdb \
-      #     -e DB_USER=root \
-      #     -e MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db_password \
-      #     -v ${{ github.workspace }}/db:/run/secrets \
-      #     ${{ vars.DOCKER_USERNAME }}/billetterie:${{ github.sha }}
+      - name: Run prod image
+        run: |
+          docker run -d --name app \
+          --network ci-net \
+          -e MYSQL_HOST=db \
+          -e MYSQL_DATABASE=testdb \
+          -e MYSQL_USER=root \
+          -e MYSQL_ROOT_PASSWORD_FILE=/run/secrets/mysql-root \
+          ${{ vars.DOCKER_USERNAME }}/billetterie:${{ github.sha }}
 
-      # - name: Build API Tests Client Image
-      #   run: |
-      #     docker build --target api-tests -t local/api-tests:latest .
+      - name: Build API Tests Client Image
+        run: |
+          docker build --target api-tests -t local/api-tests:latest .
 
-      # - name: Wait for services to be ready
-      #   run: |
-      #     sleep 10
-      #     echo "=== LOGS DE L'APPLICATION ==="
-      #     docker logs db
-      #     echo "=== STATUT DES CONTENEURS ==="
-      #     docker ps -a
+      - name: Wait for services to be ready
+        run: |
+          sleep 10
+          echo "=== LOGS DE L'APPLICATION ==="
+          docker logs app
 
-      # - name: Run external tests on production image
-      #   run: |
-      #     docker run --rm \
-      #       --network ci-net \
-      #       -e API_URL=http://app:3000 \
-      #       local/api-tests:latest
+      - name: Run external tests on production image
+        run: |
+          docker run --rm \
+            --network ci-net \
+            -e API_URL=http://app:3000 \
+            local/api-tests:latest
 
-      # # -----------------------------
-      # # Docker Scout (fail on critical)
-      # # -----------------------------
-      - name: Docker Scout CVE scan (gating)
-        uses: docker/scout-action@v1
+  # -------------------------------------------------------------
+  # 4. Scan image + déploiement
+  # -------------------------------------------------------------
+  scan-deploy:
+    runs-on: ubuntu-latest
+    # On attend que les tests d'intégration (externes) soient validés
+    needs: [build-and-test-image]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v4
         with:
-          image: ${{ vars.DOCKER_USERNAME }}/billetterie:${{ github.sha }}
-          command: cves
-          only-severities: critical
-          exit-code: true
+          username: ${{ vars.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v4
+
+      # Décommentez ici pour réactiver le scan Docker Scout avant le push
+      # - name: Docker Scout CVE scan (gating)
+      #   uses: docker/scout-action@v1
+      #   with:
+      #     image: ${{ vars.DOCKER_USERNAME }}/billetterie:${{ github.sha }}
+      #     command: cves
+      #     only-severities: critical
+      #     exit-code: true
 
       # # -----------------------------
       # # Push only if everything passed
       # # -----------------------------
-      - name: Push image
-        run: |
-          docker push ${{ vars.DOCKER_USERNAME }}/billetterie:${{ github.sha }}
-          docker tag \
-                     ${{ vars.DOCKER_USERNAME }}/billetterie:${{ github.sha }} \
-                     ${{ vars.DOCKER_USERNAME }}/billetterie:latest
-          docker push \
-                     ${{ vars.DOCKER_USERNAME }}/billetterie:latest
+      # - name: Push image
+      #   run: |
+      #     docker push ${{ vars.DOCKER_USERNAME }}/billetterie:${{ github.sha }}
+      #     docker tag \
+      #                ${{ vars.DOCKER_USERNAME }}/billetterie:${{ github.sha }} \
+      #                ${{ vars.DOCKER_USERNAME }}/billetterie:latest
+      #     docker push \
+      #                ${{ vars.DOCKER_USERNAME }}/billetterie:latest

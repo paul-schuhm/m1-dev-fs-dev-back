@@ -129,6 +129,8 @@ npm run gen-oad
 ~~~bash
 #Lister les jobs
 act -l
+#Inspecter dépendances entre jobs
+act -g
 #Dry-run
 act -n
 #Run
