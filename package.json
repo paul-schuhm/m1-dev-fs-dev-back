@@ -13,7 +13,7 @@
     "lint": "eslint src/**/*.js --max-warnings=0"
   },
   "lint-staged": {
-    "src/*.js": [
+    "src/**/*.js": [
       "eslint --fix --max-warnings=0"
     ]
   },
