@@ -1,4 +1,4 @@
-function publicChat(ws, req) {
+function publicChat(ws) {
 
     ws.on('message', function(msg) {
         console.log('Message reçu :', msg.toString());
