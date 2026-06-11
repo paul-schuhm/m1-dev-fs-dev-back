@@ -27,6 +27,7 @@ const dsn = {
 };
 
 
+
 //On ouvre un pool de connexion réutilisable
 const connexion = mysql.createPool(dsn);
 
