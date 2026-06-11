@@ -178,6 +178,7 @@ jobs:
         with:
           image: ${{ vars.DOCKER_USERNAME }}/billetterie:${{ github.sha }}
           command: cves
+          load: true
           only-severities: critical
           exit-code: true
 
