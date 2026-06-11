@@ -86,7 +86,7 @@ CMD ["npm", "run", "dev"]
 # ================================================
 # Production Stage (application env de prod)
 # ================================================
-FROM dhi.io/node:24-alpine3.23 AS production
+FROM dhi.io/node:24-alpine3.23-dev AS production
 
 # Set working directory
 WORKDIR /app
