@@ -26,8 +26,6 @@ const dsn = {
     queueLimit: 0,
 };
 
-
-
 //On ouvre un pool de connexion réutilisable
 const connexion = mysql.createPool(dsn);
 
