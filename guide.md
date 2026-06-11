@@ -36,6 +36,7 @@
   - [Checkpoint stratégie de migration](#checkpoint-stratégie-de-migration)
   - [Intégration d'un ORM pour les migrations](#intégration-dun-orm-pour-les-migrations)
   - [Mise en cache avec Redis](#mise-en-cache-avec-redis)
+  - [Intégration d'un chat public (*via* le protocole WebSocket)](#intégration-dun-chat-public-via-le-protocole-websocket)
 
 ## Objectif principal
 
@@ -638,3 +639,16 @@ Pré requis :
     - Scénario avec breaking changes (expand/contract)
 - Sécuriser : rate-limiting avec fail2ban avec reverse proxy.
 - -->
+
+## Intégration d'un chat public (*via* le protocole WebSocket)
+
+1. **Installer** [express-ws](https://www.npmjs.com/package/express-ws) pour intégrer l'implémentation du serveur websocket à l'application express.
+2. **Installer** le programme [wscat](https://www.npmjs.com/package/wscat) pour tester la connexion websocket directement depuis le terminal.
+3. **Exposer** une nouvelle ressource `/chats/public` en implémentant un nouveau *router* (`chatRouter`) et *controller* (`chatController`)
+4. **Tester** la connexion websocket avec `wscat` :
+
+~~~bash
+wscat -c ws://localhost:3000/v1/chats/public
+~~~
+
+Dans un premier temps, le serveur doit juste faire un echo du message client (*mode perroquet*).

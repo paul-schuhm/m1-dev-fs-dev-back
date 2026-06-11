@@ -4,7 +4,7 @@ const hal = require('../../service/hal');
 const router = express.Router();
 
 router.get('/', function (req, res) {
-    //Retourne un objet JSON conforme à la spec HAL : un Resource Object
+    //Retourne un objet JSON conforme à la spec HAL (Resource Object)
     res
         .status(200)
         .set('Content-Type', 'application/hal+json')
@@ -13,10 +13,11 @@ router.get('/', function (req, res) {
             _links: {
                 self: hal.halLinkObject('/'),
                 concerts: hal.halLinkObject('/v1/concerts'),
+                public_chat: hal.halLinkObject('/v1/chats/public'),
             },
-            //Etat actuel de ma ressource "Page d'accueil"
+            //État actuel de ma ressource "Page d'accueil"
             description:
-        'A (quasi)RESTful concerts ticketing system. Look for concerts and book a seat !',
+        'A (quasi)RESTful concerts ticketing system. Look for concerts, talk with other fans and book a seat !',
         });
 });
 

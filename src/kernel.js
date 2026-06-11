@@ -1,6 +1,7 @@
 const express = require('express');
 
 const app = express();
+require('express-ws')(app);
 const port = 3000;
 
 //Monte la swagger UI uniquement en environnement de dev

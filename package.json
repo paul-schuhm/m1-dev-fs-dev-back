@@ -7,6 +7,7 @@
     "prepare": "husky",
     "gen-oad": "node build-openapi-spec.js",
     "dev": "nodemon --watch src --ext js,json --inspect=0.0.0.0:9230 src/kernel.js",
+    "ddev": "docker compose -f compose.yaml -f compose.dev.yaml up --watch",
     "build": "node esbuild.config.mjs",
     "test": "jest --passWithNoTests --runInBand",
     "lint": "eslint src/**/*.js --max-warnings=0"
@@ -23,6 +24,7 @@
   "dependencies": {
     "dotenv": "^16.4.5",
     "express": "^5.2.1",
+    "express-ws": "^5.0.2",
     "mysql2": "^3.22.4"
   },
   "devDependencies": {
