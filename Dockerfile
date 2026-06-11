@@ -3,7 +3,7 @@
 # ================================================
 # Base Image (basé sur les Docker Hardened Images)
 # ================================================
-FROM dhi.io/node:24-alpine3.22-dev AS base
+FROM dhi.io/node:24-alpine3.23-dev AS base
 WORKDIR /app
 # Create non-root user for security
 RUN addgroup -g 1001 -S nodejs && \
