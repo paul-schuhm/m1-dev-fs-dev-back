@@ -11,7 +11,7 @@ node_modules/
 # Build outputs (built in container)
 dist/
 
-db-data/
+**/db-data/
 db
 
 # Environment files

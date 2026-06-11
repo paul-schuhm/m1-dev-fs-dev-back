@@ -2,15 +2,15 @@
 
 - [Développement et conception Backend : Projet Fil Rouge - Système de Billetterie (web API)](#développement-et-conception-backend--projet-fil-rouge---système-de-billetterie-web-api)
   - [Pré-requis](#pré-requis)
-    - [Pipeline CI](#pipeline-ci)
+    - [Pour la pipeline d'intégration continue (CI)](#pour-la-pipeline-dintégration-continue-ci)
   - [Installer et lancer le projet](#installer-et-lancer-le-projet)
     - [Installation](#installation)
     - [Lancer le projet](#lancer-le-projet)
-  - [Tester avec cURL et jq](#tester-avec-curl-et-jq)
+  - [Tester rapidement l'API avec cURL et jq](#tester-rapidement-lapi-avec-curl-et-jq)
   - [Documentation OpenAPI](#documentation-openapi)
-    - [Accéder à la documentation OpenAPI](#accéder-à-la-documentation-openapi)
+    - [Accéder à la documentation interactive](#accéder-à-la-documentation-interactive)
     - [Re-générer la documentation](#re-générer-la-documentation)
-  - [*Workflow* de développement](#workflow-de-développement)
+  - [*Workflow* de développement proposé](#workflow-de-développement-proposé)
   - [Intégration Continue (CI)](#intégration-continue-ci)
     - [Tester localement les Github Actions avec `act`](#tester-localement-les-github-actions-avec-act)
   - [Mise en production (Continuous deployment/delivery)](#mise-en-production-continuous-deploymentdelivery)
@@ -23,18 +23,19 @@
     - [Schémas utilisés](#schémas-utilisés)
     - [Docker et compose](#docker-et-compose)
     - [CI avec Github Actions](#ci-avec-github-actions)
-  - [Tooling](#tooling)
+    - [Dépendances notables (Node.js)](#dépendances-notables-nodejs)
+  - [Tooling (IDE)](#tooling-ide)
     - [Sources (Node.js)](#sources-nodejs)
     - [Github Actions](#github-actions)
 
 ## Pré-requis
 
-- Installer Docker et Compose
+- Installer [Docker et Compose](https://docs.docker.com/get-started/)
 
-### Pipeline CI
+### Pour la pipeline d'intégration continue (CI)
 
-- Disposer d'un compte sur Docker Inc (Docker Hub pour publier les images, Docker Scout pour le scan de vulnérabilités dans la *pipeline* CI);
-- Disposer d'un compte gratuit sur [Sonarcloud](https://sonarcloud.io) (SonarQube pour analyse statique dans la *pipeline* CI)
+- Disposer d'un compte (gratuit) sur [Docker Hub](https://hub.docker.com/), pour publier les images sur un registre public, Docker Scout pour le scan de vulnérabilités ;
+- Disposer d'un compte (gratuit) sur [Sonarcloud](https://sonarcloud.io), pour [SonarQube](https://www.sonarsource.com/fr/products/sonarqube/) (analyse statique avancée de code dans différentes technologies)
 
 ## Installer et lancer le projet
 
@@ -61,7 +62,13 @@ sonar.sources=src
 docker compose -f compose.yaml -f compose.dev.yaml up --watch
 ~~~
 
-## Tester avec cURL et jq
+ou plus simplement
+
+~~~bash
+npm run ddev
+~~~
+
+## Tester rapidement l'API avec cURL et jq
 
 ~~~bash
 #point d'entrée du service
@@ -80,7 +87,7 @@ curl "localhost:3000/v1/concerts?offset=1&limit=3" | jq '._links'
 
 ## Documentation OpenAPI
 
-### Accéder à la documentation OpenAPI
+### Accéder à la documentation interactive
 
 En environnement de développement, [la documentation OpenAPI](https://spec.openapis.org/oas/v3.2.0.html) interactive est servie sur l'URL `/doc`,
 
@@ -90,31 +97,29 @@ En environnement de développement, [la documentation OpenAPI](https://spec.open
 npm run gen-oad
 ~~~
 
-## *Workflow* de développement
+## *Workflow* de développement proposé
 
-1. On [lance le projet en mode dev (*hot reload* via le mode *watch* de Compose)](#lancer-le-projet-env-de-dev)
-2. On développe (modifie sources)
-3. On *commit* sur une branche, déclenche hook *pre-commit* (qualité locale) :
+1. [Lancer le projet en mode dev (*hot reload* via le mode *watch* de Compose)](#lancer-le-projet-env-de-dev)
+2. **Développer** (modifier sources), sur sa branche
+3. *Commit* sur une branche, déclenche hook *pre-commit* (qualité locale) :
    1. Formatage (avec eslint)
    2. Analyse statique/Linting (avec eslint)
    3. Tests "internes" (avec jest)
 4. Si tout passe, le *commit est réalisé* en local
-5. Publie le commit sur le dépôt distant
-6. Déclenchement de la [*pipeline* CI](#ci) au merge sur `main`
+5. Publier le commit sur le dépôt distant
+6. Déclenchement de la [*pipeline* CI](#ci) au merge sur `main` (via une PR par exemple)
 
 ## Intégration Continue (CI)
 
 *Pipeline* d'intégration continue *CI* avec *Github Actions*
 
-<!-- Indiquer le contenu de la pipeline -->
-
-1. Formatage et analyse statique avec ESlint
+1. Formatage et analyse statique du code avec ESlint
 2. Login Docker Hub et préparation du builder d'image
 3. Tests *internes* : build et execution de l'image test
 4. Analyse statique avec SonarQube (production de rapport + quality gate)
 5. Build de l'image finale
-6. Tests *externes* (test de l'image finale dans un environnement proche de la prod)
-7. Analyse de l'image finale (dépendances) avec [Docker Scout](https://docs.docker.com/scout/)
+6. Tests *externes*, d'intégration (test de l'image finale dans un environnement proche de la prod)
+7. Analyse de l'image finale (code+dépendances) avec [Docker Scout](https://docs.docker.com/scout/)
 8. Publication de l'image finale sur Docker Hub (registre public)
 
 ### Tester localement les Github Actions avec `act`
@@ -177,7 +182,6 @@ Nous reprenons la démarche générale, proposée par [Leonard Richardson](https
 - Améliorer et personnaliser les règles de l'analyse statique et fixer un niveau d'exigence adapté (via `eslint`) ;
 - Développer une série de tests *stateless* pertinente ;
 - Développer une série de tests *stateful* pertinente ;
-- Re-factoriser le workflow `ci` *Github Actions* en plusieurs *jobs* interdépendants
 - Créer et utiliser un utilisateur `mysql` différent de `root` dédié à l'application avec les bon niveau de permissions ;
 - **Développer le service de billetterie !**
 
@@ -208,19 +212,24 @@ Nous reprenons la démarche générale, proposée par [Leonard Richardson](https
 - [SonarQube Quality Gate check](https://github.com/SonarSource/sonarqube-quality-gate-action), dépôt des *actions* fournie par SonarCloud
 - [Docker Scout](https://docs.docker.com/scout/), analyseur d'images (couche par couche), pour détecter des vulnérabilités
 
-## Tooling
+### Dépendances notables (Node.js)
+
+- [express](https://expressjs.com/en/)
+- [express-ws](https://www.npmjs.com/package/express-ws)
+
+## Tooling (IDE)
 
 - curl
 - [jq](https://jqlang.org/), *sed* for json data
 
 ### Sources (Node.js)
 
-- [supertest](https://www.npmjs.com/package/supertest), tests au niveau de la couche http
-- [Husky](https://typicode.github.io/husky/), gestion explicite et partageable de hooks *pre-commit*
-- [eslint](https://eslint.org/), formatage et analyse statique (*linter*) des sources js
+- [Husky](https://typicode.github.io/husky/), gestion explicite et partageable de git hooks *pre-commit*
+- [eslint](https://eslint.org/), formatage (via plugins) et analyse statique des sources js
+- [supertest](https://www.npmjs.com/package/supertest), pour réaliser des tests fonctionnels (*stateless*) au niveau de la couche http
 - [sonarjs](https://www.npmjs.com/package/eslint-plugin-sonarjs), plugin d'eslint pour la détection de *code smells*, suite de règles maintenue par SonarQube
 
 ### Github Actions
 
-- [act](https://github.com/nektos/act), tester les *Github Actions* localement *avant* de les exécuter sur Github
+- [act](https://github.com/nektos/act), programme pour tester les *Github Actions* localement *avant* de les exécuter sur Github, indispensable pour configurer le workflow de la CI !
 - [actionlint](https://github.com/rhysd/actionlint), analyseur statique des fichiers de Github Actions
