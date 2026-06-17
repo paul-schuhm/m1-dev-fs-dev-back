@@ -79,12 +79,12 @@ async function all(req, res, next) {
     const hasNext = query.offset + query.limit < concerts.length;
     const hasPrev = query.offset > 0;
 
-    const current_url = `${req.baseUrl}?offset=${query.offset}&limit=${query.limit}`;
+    const current_url = `${req.originalUrl}?offset=${query.offset}&limit=${query.limit}`;
     const next_url = hasNext
-        ? `${req.baseUrl}?offset=${query.offset + query.limit}&limit=${query.limit}`
+        ? `${req.originalUrl}?offset=${query.offset + query.limit}&limit=${query.limit}`
         : null;
     const prev_url = hasPrev
-        ? `${req.baseUrl}?offset=${Math.max(query.offset - query.limit, 0)}&limit=${query.limit}`
+        ? `${req.originalUrl}?offset=${Math.max(query.offset - query.limit, 0)}&limit=${query.limit}`
         : null;
 
     const response = hal.listeConcertsToResourceObject(
